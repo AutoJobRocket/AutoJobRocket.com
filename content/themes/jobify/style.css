@@ -4,7 +4,7 @@ Theme URI: https://astoundify.com/
 Author: Astoundify
 Author URI: http://astoundify.com
 Description: A beautiful job board site completely integrated with Mike Jolley's WP Job Manager plugin. Use 10+ custom widgets including an interactive map, multiple sliders, testimonials, and more to create a unique homepage in seconds.
-Version: 1.4.1
+Version: 1.4.2
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Tags: white, one-column, right-sidebar, fixed-width, custom-background, custom-header, theme-options, full-width-template, featured-images, flexible-header, custom-menu, translation-ready
@@ -2361,6 +2361,10 @@ ul.job_listings .job_listing:hover,
 	background: #fafafa;
 }
 
+.jobify_widget_jobs .load_more_jobs {
+	display: none !important;
+}
+
 /**
  * Callout
  */
@@ -2914,6 +2918,15 @@ blockquote .individual-testimonial-author cite {
 
 .rcp_subscription_level.selected .pricing-table-widget-description {
 	border-color: #bbb;
+}
+
+.card-expiry-month,
+.card-expiry-year {
+	width: 10% !important;
+}
+
+input#card-cvc.edd-input.required {
+	width: 20% !important;
 }
 
 /**

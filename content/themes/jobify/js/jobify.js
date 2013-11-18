@@ -100,14 +100,7 @@ Jobify.App = ( function($) {
 			return $.magnificPopup.open( $.extend( args, { 
 				type            : 'inline',
 				fixedContentPos : false,
-				callbacks       : {
-					close : function() {
-						$( '.mfp-content' )
-							.find( '.animated' )
-							.removeClass( 'fadeInDownBig' )
-							.addClass( 'fadeOutDownBig' );
-					}
-				}
+				removalDelay    : 500
 			} ) );
 		},
 
@@ -197,12 +190,6 @@ Jobify.Widgets = ( function($) {
 			if ( jobifySettings.widgets.jobify_widget_stats.animate === 0 )
 				return;
 
-			$( '.job-stats li strong' ).each(function() {
-				$(this)
-					.attr( 'data-count', parseInt( $(this).html(), 10 ) )
-					.html(0);
-			});
-
 			$( '.jobify_widget_stats' ).waypoint(function(direction) {
 				if ( 'down' != direction )
 					return;
@@ -210,7 +197,6 @@ Jobify.Widgets = ( function($) {
 				$( '.job-stats li strong' ).each(function(i) {
 					$(this).delay(500 * i).queue(function(next){
 						$(this).addClass( 'animated bounceIn' );
-						Jobify.Widgets.count( $(this) );
 					});
 				});
 			}, { 

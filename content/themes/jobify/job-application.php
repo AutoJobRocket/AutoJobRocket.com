@@ -3,7 +3,7 @@
 	<div class="application">
 		<input class="application_button" type="button" value="<?php esc_attr_e( 'Apply', 'jobify' ); ?>" />
 
-		<div class="application_details animated fadeIn modal">
+		<div class="application_details animated">
 			<h2 class="modal-title"><?php _e( 'Apply', 'jobify' ); ?></h2>
 
 			<div class="application-content">

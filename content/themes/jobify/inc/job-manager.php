@@ -76,6 +76,29 @@ function jobify_job_archives() {
 }
 add_action( 'template_redirect', 'jobify_job_archives' );
 
+/**
+ * When updating a post remove the cached meta information.
+ *
+ * @since Jobify 1.4.2
+ */
+function jobify_clear_location_cache() {
+	global $post;
+
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) 
+		return;
+
+	if ( 'job_listing' != $post->post_type )
+		return;
+
+	if ( ! current_user_can( 'edit_post', $post->ID ) )
+		return;
+
+	if ( $post->job_cords ) {
+		delete_post_meta( $post->ID, 'job_cords' );
+	}
+}
+add_action( 'save_post', 'jobify_clear_location_cache' );
+
 /** Submission ------------------------------------------------------------------------ */
 
 /**

@@ -43,7 +43,7 @@ global $job_manager;
 								$companies   = Astoundify_Job_Manager_Companies::instance();
 								$company_url = esc_url( $companies->company_url( get_the_company_name() ) );
 						?>
-						<a href="<?php echo $company_url; ?>"><?php the_company_logo(); ?></a>
+						<a href="<?php echo $company_url; ?>" target="_blank"><?php the_company_logo(); ?></a>
 						<?php else : ?>
 							<?php the_company_logo(); ?>
 						<?php endif; ?>
@@ -62,7 +62,7 @@ global $job_manager;
 							<?php do_action( 'job_listing_company_social_before' ); ?>
 
 							<?php if ( get_the_company_website() ) : ?>
-							<li><a href="<?php echo get_the_company_website(); ?>" itemprop="url">
+							<li><a href="<?php echo get_the_company_website(); ?>" target="_blank" itemprop="url">
 								<i class="icon-link"></i> 
 								<?php _e( 'Website', 'jobify' ); ?>
 							</a></li>

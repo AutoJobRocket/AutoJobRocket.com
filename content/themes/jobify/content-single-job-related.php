@@ -17,6 +17,7 @@ $related_args = array(
 	'orderby'   => 'rand',
 	'posts_per_page' => 3,
 	'post_status' => 'publish',
+	'post__not_in' => array( $post->ID ),
 	'tax_query' => array(
 		array(
 			'taxonomy' => 'job_listing_category',

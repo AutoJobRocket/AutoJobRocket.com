@@ -83,7 +83,7 @@ class WP_Job_Manager_Form_Register extends WP_Job_Manager_Form {
 				),
 				'password' => array(
 					'label'       => __( 'Password', 'jobify' ),
-					'type'        => 'text',
+					'type'        => 'password',
 					'required'    => true,
 					'placeholder' => '',
 					'priority'    => 3
@@ -242,7 +242,7 @@ class WP_Job_Manager_Form_Register extends WP_Job_Manager_Form {
 				wp_set_auth_cookie( $user_id, true, is_ssl() );
 				$current_user = get_user_by( 'id', $user_id );
 
-				wp_safe_redirect( home_url() );
+				wp_safe_redirect( apply_filters( 'jobify_registeration_redirect', home_url() ) );
 				exit();
 			} else {
 				do_action( 'jobify_user_registered', $current_user );

@@ -283,6 +283,10 @@ function jobify_scripts_styles() {
 
 	foreach ( jobify_homepage_widgets() as $widget ) {
 		$options = get_option( 'widget_' . $widget[ 'classname' ] );
+
+		if ( ! isset( $widget[ 'callback' ][0] ) )
+			continue;
+
 		$options = $options[ $widget[ 'callback' ][0]->number ];
 
 		$jobify_settings[ 'widgets' ][ $widget[ 'classname' ] ] = array(
@@ -323,7 +327,7 @@ function jobify_homepage_widgets() {
 		return $_widgets;
 
 	foreach ( (array) $sidebars_widgets[$index] as $id ) {
-		$_widgets[] = $wp_registered_widgets[$id];
+		$_widgets[] = isset( $wp_registered_widgets[$id] ) ? $wp_registered_widgets[$id] : null;
 	}
 
 	return $_widgets;

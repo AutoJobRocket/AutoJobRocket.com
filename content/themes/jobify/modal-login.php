@@ -10,7 +10,7 @@ $login = jobify_find_page_with_shortcode( array( 'jobify_login_form', 'login_for
 $login = get_post( $login );
 ?>
 
-<div id="login-modal-wrap" class="modal-login modal animated fadeIn">
+<div id="login-modal-wrap" class="modal-login modal">
 	<h2 class="modal-title"><?php echo esc_attr( $login->post_title ); ?></h2>
 
 	<?php echo do_shortcode( get_post_field( 'post_content', $login->ID ) ); ?>

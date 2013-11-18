@@ -26,23 +26,23 @@ class Jobify_Widget_Map extends Jobify_Widget {
 				'label' => __( 'Zoom Level:', 'jobify' ),
 				'options' => array(
 					'auto' => __( 'Auto', 'jobify' ),
-					1      => 1,
-					2      => 2,
-					3      => 3,
-					4      => 4,
-					5      => 5,
-					6      => 6,
-					7      => 7,
-					8      => 8,
-					9      => 1,
-					10     => 10,
-					11     => 11,
-					12     => 12,
-					13     => 13,
-					14     => 14,
-					15     => 15,
-					16     => 16,
-					17     => 17
+					'1'      => 1,
+					'2'      => 2,
+					'3'      => 3,
+					'4'      => 4,
+					'5'      => 5,
+					'6'      => 6,
+					'7'      => 7,
+					'8'      => 8,
+					'9'      => 9,
+					'10'     => 10,
+					'11'     => 11,
+					'12'     => 12,
+					'13'     => 13,
+					'14'     => 14,
+					'15'     => 15,
+					'16'     => 16,
+					'17'     => 17
 				)
 			),
 			'center' => array(
@@ -70,11 +70,6 @@ class Jobify_Widget_Map extends Jobify_Widget {
 	function widget( $args, $instance ) {
 		if ( $this->get_cached_widget( $args ) )
 			return;
-
-		wp_enqueue_script( 'google-maps', ( is_ssl() ? 'https' : 'http' ) . '://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false' );
-		wp_enqueue_script( 'jquery-map-ui', get_template_directory_uri() . '/js/jquery.ui.map.min.js', array( 'jquery', 'google-maps' ) );
-		wp_enqueue_script( 'google-maps-tooltips', get_template_directory_uri() . '/js/tooltip.js', array( 'jquery-map-ui' ) );
-		wp_enqueue_script( 'jobify-maps', get_template_directory_uri() . '/js/jobify-map.js', array( 'google-maps-tooltips' ) );
 
 		ob_start();
 
@@ -171,6 +166,8 @@ class Jobify_Widget_Map_Interactive {
 	 * @return void
 	 */
 	private function setup_actions() {
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+
 		if ( ! has_action( 'wp_enqueue_scripts', array( $this, 'jobify_json_default_points' ) ) ) 
 			add_action( 'wp_enqueue_scripts', array( $this, 'jobify_json_default_points' ) );
 
@@ -181,6 +178,20 @@ class Jobify_Widget_Map_Interactive {
 		add_action( 'wp_ajax_nopriv_jobify_cache_cords', array( $this, 'cache_cords' ) );
 
 		remove_action( 'job_manager_job_filters_search_jobs_end', array( 'WP_Job_Manager_Job_Tags_Shortcodes', 'show_tag_filter' ) );
+	}
+
+	/**
+	 * Enqueue Scripts
+	 *
+	 * @since Jobify 1.4.3
+	 *
+	 * @return void
+	 */
+	function enqueue_scripts() {
+		wp_enqueue_script( 'google-maps', ( is_ssl() ? 'https' : 'http' ) . '://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false' );
+		wp_enqueue_script( 'jquery-map-ui', get_template_directory_uri() . '/js/jquery.ui.map.min.js', array( 'jquery', 'google-maps' ) );
+		wp_enqueue_script( 'google-maps-tooltips', get_template_directory_uri() . '/js/tooltip.js', array( 'jquery-map-ui' ) );
+		wp_enqueue_script( 'jobify-maps', get_template_directory_uri() . '/js/jobify-map.js', array( 'google-maps-tooltips' ) );
 	}
 
 	/**
@@ -199,7 +210,11 @@ class Jobify_Widget_Map_Interactive {
 			$location = get_post()->_job_location;
 
 			if ( get_post()->job_cords ) {
-				$location = get_post()->job_cords;
+				$cords = get_post()->job_cords;
+
+				if ( count( $cords ) == 2 ) {
+					$location = get_post()->job_cords;
+				}
 			}
 
 			$points[] = array(
@@ -284,6 +299,4 @@ class Jobify_Widget_Map_Interactive {
 		echo json_encode( $cords );
 	}
 }
-
-if ( is_active_widget( false, false, 'jobify_widget_map', true ) )
-	new Jobify_Widget_Map_Interactive;
+new Jobify_Widget_Map_Interactive;

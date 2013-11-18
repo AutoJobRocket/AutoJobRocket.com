@@ -116,7 +116,7 @@ Jobify.Map = ( function($) {
 			setupMap();
 			bindFilter();
 
-			$( '#search_keywords, #search_location, .job_types input, #search_category' ).change( function() {
+			$( '#map-canvas-wrap #search_keywords, #map-canvas-wrap #search_location, #map-canvas-wrap .job_types input, #map-canvas-wrap #search_category' ).change( function() {
 				$( '.live-map' ).trigger( 'submit' );
 			} );
 		}

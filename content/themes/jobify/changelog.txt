@@ -1,5 +1,16 @@
 == Changelog ==
 
+= 1.4.2: November 17, 2013 =
+
+* Fix: When a job listing is updated clear the location cache just in case.
+* Fix: Map javascript error that may cause the search from not showing.
+* Fix: Make sure the map widget zoom levels show in the correct order.
+* Tweak: RCP style compatability.
+* Tweak: Change the animation on modals.
+* Tweak: Change the animation on site stats widget.
+* Tweak: Remove the "Load More Jobs" when using the jobs widget on the homepage.
+* Tweak: Various tweaks and improvements for a more stable experience.
+
 = 1.4.1: October 19, 2013 =
 
 * New: Map + Jobs Page Template
