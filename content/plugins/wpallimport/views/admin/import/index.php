@@ -46,7 +46,7 @@ $l10n = array(
 				<?php
 				endif;
 			?>
-	        <form method="post" class="choose-file no-enter-submit" enctype="multipart/form-data" autocomplete="off">
+	        <form method="post" class="choose-file enter-submit" enctype="multipart/form-data" autocomplete="off">
 				<input type="hidden" name="is_submitted" value="1" />
 				<?php wp_nonce_field('upload-xml', '_wpnonce_upload-xml') ?>
 				<?php if (!empty($detection_feed_extension)):?>
@@ -92,6 +92,7 @@ $l10n = array(
 						<input type="text" class="regular-text" name="url" value="<?php echo esc_attr($post['url']) ?>" />
 					</div>
 				</div>
+				<?php if (PMXI_Plugin::getInstance()->getOption('enable_ftp_import')):?>
 				<div class="file-type-container">
 					<h3>
 						<input type="radio" id="type_ftp" name="type" value="ftp" <?php echo 'ftp' == $post['type'] ? 'checked="checked"' : '' ?> />
@@ -103,6 +104,7 @@ $l10n = array(
 						<div class="note"><?php _e('<b>Troubleshooting:</b> Use the full URL to the file on the FTP server. Make sure if you paste the URL into your browser and enter the username and password, the file you are attempting to import downloads. You may use an asterisk to load multiple files. For example, ftp://example.com/datafeeds/*.xml', 'pmxi_plugin') ?></div>
 					</div>
 				</div>
+				<?php endif; ?>
 				<div class="file-type-container">
 					<h3>
 						<input type="radio" id="type_file" name="type" value="file" <?php echo 'file' == $post['type'] ? 'checked="checked"' : '' ?> />

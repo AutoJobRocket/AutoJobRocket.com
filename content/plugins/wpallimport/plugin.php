@@ -3,7 +3,7 @@
 Plugin Name: WP All Import
 Plugin URI: http://www.wpallimport.com/
 Description: The most powerful solution for importing XML and CSV files to WordPress. Import to Posts, Pages, and Custom Post Types. Support for imports that run on a schedule, ability to update existing imports, and much more.
-Version: 3.2
+Version: 3.3
 Author: Soflyy
 */
 
@@ -48,7 +48,7 @@ else {
 	 */
 	define('PMXI_PREFIX', 'pmxi_');
 
-	define('PMXI_VERSION', '3.1.4');
+	define('PMXI_VERSION', '3.3');
 
 	define('PMXI_EDITION', 'paid');
 
@@ -254,8 +254,56 @@ else {
 			}
 
 			// register admin page pre-dispatcher
-			add_action('admin_init', array($this, '__adminInit'));			
+			add_action('admin_init', array($this, '__adminInit'));									
+			add_action('admin_init', array($this, '_fix_options'));		
+		}
 
+		/**
+		 * convert imports options
+		 * compatibility with version 3.3
+		 */
+		public function _fix_options(){
+			$imports = new PMXI_Import_List();
+			$post = new PMXI_Post_Record();
+			
+			foreach ($imports->setColumns($imports->getTable() . '.*')->getBy(array('large_import' => 'Yes'))->convertRecords() as $imp){
+				
+				$imp->getById($imp->id);				
+				
+				if ( ! $imp->isEmpty() and empty($imp->options['converted_options'])){									
+
+					$options = $imp->options;
+
+					$options['update_all_data'] = 'no';
+					$options['create_new_records'] = ( ! empty($options['not_create_records'])) ? 0 : 1;
+					$options['is_update_status'] = ( ! empty($options['is_keep_status']) ) ? 0 : 1;
+					$options['is_update_content'] = ( ! empty($options['is_keep_content'])) ? 0 : 1;
+					$options['is_update_title'] = ( ! empty($options['is_keep_title'])) ? 0 : 1;
+					$options['is_update_excerpt'] = ( ! empty($options['is_keep_excerpt'])) ? 0 : 1;
+					$options['is_update_categories'] = ( ! empty($options['is_keep_categories'])) ? 0 : 1;
+					$options['is_update_attachments'] = ( ! empty($options['is_keep_attachments_on_update'])) ? 0 : 1;
+					$options['is_update_images'] = ( ! empty($options['is_keep_images'])) ? 0 : 1;
+					$options['is_update_dates'] = ( ! empty($options['is_keep_dates'])) ? 0 : 1;
+					$options['is_update_menu_order'] = ( ! empty($options['is_keep_menu_order'])) ? 0 : 1;
+					$options['is_update_parent'] = ( ! empty($options['is_keep_parent'])) ? 0 : 1;
+					$options['is_update_custom_fields'] = ( ! empty($options['keep_custom_fields'])) ? 0 : 1;					
+					if ("" != $options['keep_custom_fields_specific'] or "" != $options['keep_custom_fields_except']){ 
+						$options['custom_fields_list'] = ( ! empty($options['keep_custom_fields'])) ? explode(',', $options['keep_custom_fields_except']) : explode(',', $options['keep_custom_fields_specific']);						
+						$options['update_custom_fields_logic'] = ( ! empty($options['is_update_custom_fields'])) ? 'only' : 'all_except';						
+					}
+					if ( ! empty($options['is_keep_categories']) and ! empty($options['is_add_newest_categories'])){
+						$options['is_update_categories'] = 1;
+						$options['update_categories_logic'] = 'add_new';
+							
+					}
+					$options['converted_options'] = 1;
+					$imp->set(array(
+						'options' => $options
+					))->update();
+					
+				}
+			}
+			
 		}
 
 		/**
@@ -446,7 +494,7 @@ else {
 		                switch_to_blog($blog_id);
 		                require self::ROOT_DIR . '/schema.php';
 		                dbDelta($plugin_queries);
-		                $this->__ver_1_04_transition_fix();
+		                //$this->__ver_1_04_transition_fix();
 
 						// sync data between plugin tables and wordpress (mostly for the case when plugin is reactivated)
 						
@@ -548,6 +596,8 @@ else {
 				'ping_status' => 'open',
 				'create_draft' => 'no',
 				'author' => '',
+				'post_excerpt' => '',
+				'post_slug' => '',
 				'featured_image' => '',
 				'attachments' => '',
 				'is_import_specified' => 0,
@@ -557,46 +607,56 @@ else {
 				'unique_key' => '',
 				'feed_type' => 'auto',
 
+				'create_new_records' => 1,
 				'is_delete_missing' => 0,
+				'set_missing_to_draft' => 0,
 				'is_update_missing_cf' => 0,
-				'is_keep_former_posts' => 'no',
-				'is_keep_status' => 0,
-				'is_keep_content' => 0,
-				'is_keep_title' => 0,
-				'is_keep_excerpt' => 0,
-				'is_keep_categories' => 0,
-				'is_keep_attachments' => 0,
-				'is_keep_images' => 0,
-				'is_duplicates' => 0,
-				'is_keep_dates' => 0,
-				'is_keep_menu_order' => 0,
-				'is_keep_parent' => 0,
-				'is_keep_attachments_on_update' => 0,
-				'records_per_request' => 10,
-				'not_create_records' => 0,
-				'no_create_featured_image' => 0,
-
-				'duplicate_indicator' => 'title',
-				'duplicate_action' => 'keep',
-				'is_update_previous' => 0,
-				'is_scheduled' => '',
-				'scheduled_period' => '',
-				'post_excerpt' => '',
-				'post_slug' => '',
-				'keep_custom_fields' => 0,
-				'keep_custom_fields_specific' => '',
-				'keep_custom_fields_except' => '',
-				'friendly_name' => '',
-				'custom_duplicate_name' => '',
-				'custom_duplicate_value' => '',
-				'duplicate_matching' => 'auto',
-				'create_chunks' => 0,
 				'update_missing_cf_name' => '',
 				'update_missing_cf_value' => '',
+
+				'is_keep_former_posts' => 'no',				
+				'is_update_status' => 1,
+				'is_update_content' => 1,
+				'is_update_title' => 1,
+				'is_update_excerpt' => 1,
+				'is_update_categories' => 1,
+				'update_categories_logic' => 'full_update',
+				'taxonomies_list' => array(),
+				'taxonomies_only_list' => array(),
+				'taxonomies_except_list' => array(),
+				'is_update_attachments' => 1,
+				'is_update_images' => 1,
+				'update_images_logic' => 'full_update',				
+				'is_update_dates' => 1,
+				'is_update_menu_order' => 1,
+				'is_update_parent' => 1,			
+				'is_keep_attachments' => 0,
+				'is_keep_imgs' => 0,
+				
+				'is_update_custom_fields' => 1,
+				'update_custom_fields_logic' => 'full_update',
+				'custom_fields_list' => array(),				
+				'custom_fields_only_list' => array(),				
+				'custom_fields_except_list' => array(),				
+
+				'is_update_attributes' => 1,
+				'update_attributes_logic' => 'full_update',						
+				'attributes_list' => array(),
+				'attributes_only_list' => array(),
+				'attributes_except_list' => array(),
+
+				'duplicate_matching' => 'auto',
+				'duplicate_indicator' => 'title',								
+				'custom_duplicate_name' => '',
+				'custom_duplicate_value' => '',
+				'is_update_previous' => 0,
+				'is_scheduled' => '',
+				'scheduled_period' => '',										
+				'friendly_name' => '',				
+				'records_per_request' => 20,
 				'auto_rename_images' => 0,
 				'auto_rename_images_suffix' => '',
-				'images_name' => 'filename',
-				'is_add_newest_categories' => 0,
+				'images_name' => 'filename',				
 				'post_format' => 'standard',
 				'encoding' => 'UTF-8',
 				'delimiter' => '',
@@ -608,12 +668,19 @@ else {
 				'image_meta_alt' => '',
 				'image_meta_alt_delim' => '',
 				'image_meta_description' => '',
-				'image_meta_description_delim' => ''
+				'image_meta_description_delim' => '',
+				'status_xpath' => '',
+				'download_images' => 1,															
+				'converted_options' => 0,
+				'update_all_data' => 'yes',
+				'is_fast_mode' => 0,
+				'chuncking' => 1,
+				'import_processing' => 'ajax'
 			);
 		}
 
 		/*
-		 * Convert csv to xml using yahoo API
+		 * Convert csv to xml
 		 */
 		public static function csv_to_xml($csv_url){
 

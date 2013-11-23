@@ -965,7 +965,7 @@ class PMXI_CsvParser
         $wp_uploads = wp_upload_dir();
         if ($this->large_import){
             $tmpname = wp_unique_filename($wp_uploads['path'], str_replace("csv", "xml", basename($this->_filename)));
-            if ('' == $this->xml_path) $this->xml_path = $wp_uploads['path']  .'/'. $tmpname;            
+            if ('' == $this->xml_path) $this->xml_path = $wp_uploads['path']  .'/'. url_title($tmpname);
             $fp = fopen($this->xml_path, 'w');
             fwrite($fp, "<?xml version=\"1.0\" encoding=\"".$this->csv_encoding."\"?><data>");
         }

@@ -3,7 +3,7 @@
 if ( ! function_exists('get_file_curl') ):
 
 	function get_file_curl($url, $fullpath, $to_variable = false) {						
-
+		
 		$rawdata = wp_remote_retrieve_body( wp_remote_get($url) );
 
 		if (empty($rawdata))	
@@ -14,11 +14,7 @@ if ( ! function_exists('get_file_curl') ):
 			$fp = fopen($fullpath,'w');	    
 		    fwrite($fp, $rawdata);
 		    fclose($fp);			
-		}							
-				
-		if( ! ($image_info = @getimagesize($fullpath)) or ! in_array($image_info[2], array(IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG)))
-					
-			return pmxi_curl_download($url, $fullpath, $to_variable);
+		}													
 		
 	    return ($to_variable) ? $rawdata : true;
 	}
@@ -28,12 +24,15 @@ endif;
 if ( ! function_exists('pmxi_curl_download') ) {
 
 	function pmxi_curl_download($url, $fullpath, $to_variable){
+
+		if ( ! function_exists('curl_version') ) return false;
+		
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		$rawdata = curl_exec_follow($ch);	    	    
 
 	    $result = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
+	    
 		curl_close ($ch);
 
 		if ( empty($rawdata) ) return false;
@@ -53,7 +52,7 @@ if ( ! function_exists('curl_exec_follow') ):
 
 	function curl_exec_follow($ch, &$maxredirect = null) {
 	  
-	  $mr = $maxredirect === null ? 5 : intval($maxredirect);
+	  $mr = $maxredirect === null ? 2 : intval($maxredirect);
 
 	  if (ini_get('open_basedir') == '' && ini_get('safe_mode' == 'Off')) {
 
@@ -84,6 +83,7 @@ if ( ! function_exists('curl_exec_follow') ):
 	          $code = 0;
 	        } else {
 	          $code = curl_getinfo($rch, CURLINFO_HTTP_CODE);
+
 	          if ($code == 301 || $code == 302) {
 	            preg_match('/Location:(.*?)\n/', $header, $matches);
 	            $newurl = trim(array_pop($matches));
@@ -103,10 +103,8 @@ if ( ! function_exists('curl_exec_follow') ):
 	      
 	      if (!$mr)
 	      {
-	        if ($maxredirect === null)
-	        trigger_error('Too many redirects.', E_USER_WARNING);
-	        else
-	        $maxredirect = 0;
+	        if ($maxredirect !== null)	        
+	        	$maxredirect = 0;
 	        
 	        return false;
 	      }

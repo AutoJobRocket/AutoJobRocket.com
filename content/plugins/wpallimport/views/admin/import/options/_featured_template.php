@@ -14,10 +14,16 @@
 				</span>
 			</div>
 			<div class="input" style="margin:3px 0px;">
+				<input type="hidden" name="download_images" value="0" />
+				<input type="checkbox" id="download_images_<?php echo $entry; ?>" name="download_images" value="1" <?php echo $post['download_images'] ? 'checked="checked"' : '' ?> class="switcher fix_checkbox"/>
+				<label for="download_images_<?php echo $entry;?>"><?php _e('Download images','pmxi_plugin');?> </label>
+				<a href="#help" class="help" title="<?php _e('Enable this option and WP All Import will download images into the Uploads folder. If this option is disabled, then WP All Import will search for files in the <strong>/wp-content/uploads/'.date("Y/m").'</strong> folder, and if no matching image is found, only then will WP All Import attempt to download it', 'pmxi_plugin') ?>">?</a>
+			</div>
+			<div class="input switcher-target-download_images_<?php echo $entry; ?>" style="margin:3px 0px;">
 				<input type="hidden" name="auto_rename_images" value="0" />
 				<input type="checkbox" id="auto_rename_images_<?php echo $entry; ?>" name="auto_rename_images" value="1" <?php echo $post['auto_rename_images'] ? 'checked="checked"' : '' ?> class="switcher fix_checkbox"/>
 				<label for="auto_rename_images_<?php echo $entry;?>"><?php _e('Instead of using original image file name, set file name(s) to','pmxi_plugin');?> </label>
-				<input type="text" id="auto_rename_images_suffix_<?php echo $entry;?>" class="switcher-target-auto_rename_images_<?php echo $entry; ?>" name="auto_rename_images_suffix" value="<?php echo esc_attr($post['auto_rename_images_suffix']) ?>" /> <a href="#help" class="help" title="<?php _e('Instead of using original image file name, set file name(s) suffix', 'pmxi_plugin') ?>">?</a>
+				<input type="text" id="auto_rename_images_suffix_<?php echo $entry;?>" class="switcher-target-auto_rename_images_<?php echo $entry; ?>" name="auto_rename_images_suffix" value="<?php echo esc_attr($post['auto_rename_images_suffix']) ?>" /> 
 			</div>
 			<div class="input">
 				<input type="hidden" name="set_image_meta_data" value="0" />

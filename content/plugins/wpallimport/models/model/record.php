@@ -98,7 +98,7 @@ class PMXI_Model_Record extends PMXI_Model {
 	public function delete() {
 		if ($this->wpdb->query("DELETE FROM $this->table WHERE " . $this->buildWhere(array_intersect_key($this->toArray(TRUE), array_flip($this->primary))))) {
 			return $this;
-		} else {
+		} elseif ($this->wpdb->last_error) {
 			throw new Exception($this->wpdb->last_error);
 		}
 	}

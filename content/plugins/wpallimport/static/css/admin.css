@@ -305,6 +305,13 @@
 		color: #464646;
 		background: #DFDFDF;
 		font-size: 12px;
+		border-top: 1px solid #DFDFDF;
+		-moz-border-radius-topleft: 4px;
+		-webkit-border-top-left-radius: 4px;
+		 border-top-left-radius: 4px;
+		-moz-border-radius-topright: 4px;
+		-webkit-border-top-right-radius: 4px;
+		border-top-right-radius: 4px;
 	}
 	.pmxi_plugin .tag .xml {
 		max-height: 525px;
@@ -320,7 +327,7 @@
 	}
 	.pmxi_plugin .tag .navigation {
 		float: right;
-		margin: -2px -12px 0 0;
+		margin: 2px -12px 0 0;
 	}
 		.pmxi_plugin .tag .navigation a,
 		.pmxi_plugin .tag .navigation span {
@@ -1101,7 +1108,7 @@ table.xml table {
 }
 .pmxi_plugin .fix_checkbox{
 	position: relative;
-	/*top: -2px;*/
+	margin: 0px !important;
 }
 .pmxi_plugin .newline{
 	line-height: 16px;
@@ -1139,4 +1146,50 @@ table.xml table {
 }
 .pmxi_plugin #woocommerce-product-data{
 	margin-bottom: 20px;
+}
+.pmxi_plugin .set_xpath{
+	left: 0;
+	padding-left: 15px;
+	position: absolute;
+	top: 0;
+}
+.pmxi_plugin .chosen-container-multi .chosen-choices li.search-field input[type="text"]{
+	height: 25px !important;
+	width: auto !important;
+}
+.pmxi_plugin .chosen-container-multi .chosen-choices{
+	margin: 5px 0px !important;
+}
+.pmxi_plugin .pmxi_tips_pointer{
+	position: absolute;
+	right: 0;
+}
+.pmxi_plugin .wp-pointer-content{
+	padding: 10px;
+}
+.pmxi_plugin .wp-pointer-content ul{
+	margin-left: 20px;
+}
+.pmxi_plugin .processing_info{
+	display: none;
+}
+.pmxi_plugin input[type="text"][name="tagno"]{
+	margin-left: 5px;
+	padding: 3px;
+	width: 40px;
+	border: 1px solid #BBBBBB;
+	-moz-border-radius: 3px;
+	-khtml-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;	
+	text-align: center;
+}
+#post-preview div.title{
+	text-align:right; 
+	border-bottom: 2px solid #ccc; 
+	padding-bottom:5px; 
+	font-style:italic;
+}
+.pmxi_plugin .pl17{
+	padding-left:17px;
 }

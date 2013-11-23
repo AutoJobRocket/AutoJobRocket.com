@@ -35,6 +35,7 @@ CREATE TABLE {$table_prefix}templates (
 	is_keep_linebreaks TINYINT(1) NOT NULL DEFAULT 0,
 	is_leave_html TINYINT(1) NOT NULL DEFAULT 0,
 	fix_characters TINYINT(1) NOT NULL DEFAULT 0,
+	meta LONGTEXT,
 	PRIMARY KEY  (id)
 ) $charset_collate;
 CREATE TABLE {$table_prefix}imports (
@@ -44,17 +45,16 @@ CREATE TABLE {$table_prefix}imports (
 	type VARCHAR(32) NOT NULL DEFAULT '',
 	feed_type ENUM('xml','csv','zip','gz','') NOT NULL DEFAULT '',	
 	path TEXT,	
-	xpath VARCHAR(255) NOT NULL DEFAULT '',
+	xpath TEXT,
 	template LONGTEXT,
 	options TEXT,
 	scheduled VARCHAR(64) NOT NULL DEFAULT '',
-	registered_on DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',		
-  	large_import ENUM('Yes','No') NOT NULL DEFAULT 'No',
+	registered_on DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',		  	
   	root_element VARCHAR(255) DEFAULT '',
   	processing BOOL NOT NULL DEFAULT 0,
   	triggered BOOL NOT NULL DEFAULT 0,
   	queue_chunk_number BIGINT(20) NOT NULL DEFAULT 0,
-  	current_post_ids TEXT,  	
+  	current_post_ids LONGBLOB,  	
   	first_import TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,	
   	count BIGINT(20) NOT NULL DEFAULT 0,
   	imported BIGINT(20) NOT NULL DEFAULT 0,
@@ -69,7 +69,7 @@ CREATE TABLE {$table_prefix}posts (
 	import_id BIGINT(20) UNSIGNED NOT NULL,
 	unique_key TEXT,
 	product_key TEXT,
-	PRIMARY KEY  (id)
+	PRIMARY KEY  (id)	
 ) $charset_collate;
 CREATE TABLE {$table_prefix}files (
 	id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,

@@ -46,20 +46,25 @@
 
 <h3><?php _e('Recurring & Scheduled Imports', 'pmxi_plugin') ?></h3>
 <div><?php printf(__('Cron Job Secret Key %s', 'pmxi_plugin'), '<input type="text" name="cron_job_key" value="' . esc_attr($post['cron_job_key']) . '"/>') ?></div>
-<div class="note"><?php printf(__('Consider this option if you want specified import task to be run automatically on regular basis. Usage example:')) ?></div>
-<div class="note"><?php printf(__('create a cron job that runs processor every two minutes <strong>wget "'.home_url().'?import_key='. esc_attr($post['cron_job_key']) .'&import_id=11&action=processing"</strong>', 'pmxi_plugin')) ?></div>
-<div class="note"><?php printf(__('run trigger in scheduling period, for example every 24 hours <strong>wget "'.home_url().'?import_key='. esc_attr($post['cron_job_key']) .'&import_id=11&action=trigger"</strong>', 'pmxi_plugin')) ?></div>
 <h3><?php _e('Import Settings', 'pmxi_plugin') ?></h3>
-<div><?php printf(__('Chunk maximum size %s (Kb)', 'pmxi_plugin'), '<input type="text" name="chunk_size" value="' . esc_attr($post['chunk_size']) . '"/>') ?></div>
+<p style="margin-bottom:5px;">
+	<input type="hidden" name="enable_ftp_import" value="0"/>
+	<?php printf(__('%s <label for="enable_ftp_import">Enable FTP Imports</label>', 'pmxi_plugin'), '<input type="checkbox" name="enable_ftp_import" id="enable_ftp_import" value="1"  style="position:relative; top:-2px;" '. (($post['enable_ftp_import']) ? 'checked="checked"' : '') .'/>') ?>	
+</p>
+<div class="note" style="margin-bottom:10px;">
+	<?php _e('Many providers have PHP configurations or FTP server settings that prevent WP All Import from working properly when performing FTP imports. <br/>Use at your own risk. No troubleshooting assistance or any type of technical support or answers to questions will be provided for this feature.', 'pmxi_plugin');?>
+</div>
+<!--div><?php printf(__('Chunk maximum size %s (Kb)', 'pmxi_plugin'), '<input type="text" name="chunk_size" value="' . esc_attr($post['chunk_size']) . '"/>') ?></div-->
+<p>
+	<?php printf(__('Create XML chunks, when feed contains more than %s (records)', 'pmxi_plugin'), '<input type="text" name="large_feed_limit" value="' . esc_attr($post['large_feed_limit']) . '"/>') ?></p>
 <p>
 	<input type="hidden" name="legacy_special_character_handling" value="0"/>
 	<?php printf(__('%s <label for="legacy_special_character_handling">My CSV files contain HTML code</label>', 'pmxi_plugin'), '<input type="checkbox" name="legacy_special_character_handling" id="legacy_special_character_handling" value="1"  style="position:relative; top:-2px;" '. (($post['legacy_special_character_handling']) ? 'checked="checked"' : '') .'/>') ?>
-	<a href="#help" class="help" title="<?php _e('By default wpallimport do not encode html tags in csv feeds. If this option is enabled that wpallimport will use htmlspecialchars() function.', 'pmxi_plugin') ?>">?</a>
+	<a href="#help" class="help" title="<?php _e('By default WP All Import does not encode the content of a CSV feed using htmlspecialchars(). Enable this option, and WP All Import will use htmlspecialchars() on the CSV content. Try this option if you get errors when importing CSV files in Step 1.', 'pmxi_plugin') ?>">?</a>
 </p>
 <p>
 	<input type="hidden" name="case_sensitive" value="0"/>
 	<?php printf(__('%s <label for="case_sensitive">Enable case-sensitivity mode</label>', 'pmxi_plugin'), '<input type="checkbox" name="case_sensitive" id="case_sensitive" value="1"  style="position:relative; top:-2px;" '. (($post['case_sensitive']) ? 'checked="checked"' : '') .'/>') ?>
-	<a href="#help" class="help" title="<?php _e('', 'pmxi_plugin') ?>">?</a>
 </p>
 <p>
 	<input type="hidden" name="pingbacks" value="0"/>

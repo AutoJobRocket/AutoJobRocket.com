@@ -3,8 +3,7 @@
  * List of plugin optins, contains only default values, actual values are stored in database
  * and can be changed by corresponding wordpress function calls
  */
-$config = array(
-	/*"info_api_url" => "http://www.wpallimport.com/adminpanel/update/info.php",*/
+$config = array(	
 	"history_file_count" => 10000,
 	"history_file_age" => 365,
 	"highlight_limit" => 10000,
@@ -18,7 +17,9 @@ $config = array(
 	"cron_job_key" => url_title(rand_char(12)),
 	"chunk_size" => 32,
 	"pingbacks" => 1,
-	"legacy_special_character_handling" => 0,
+	"legacy_special_character_handling" => 1,
 	"case_sensitive" => 1,
-	"session_mode" => 'default'
+	"session_mode" => 'default',
+	"enable_ftp_import" => 0,
+	"large_feed_limit" => 1000
 );

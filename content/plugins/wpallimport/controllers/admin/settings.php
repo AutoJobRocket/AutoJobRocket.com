@@ -126,7 +126,7 @@ class PMXI_Admin_Settings extends PMXI_Controller_Admin {
 			WHERE postmeta.meta_key='".$meta_key."'
 		", ARRAY_A);		
 
-		$html = '<p>'.__('values is not found...','pmxi_plugin').'</p>';
+		$html = '<p>'.__('No existing values were found for this field.','pmxi_plugin').'</p>';
 
 		if (!empty($r)){
 			$html = '<select class="existing_meta_values"><option value="">'.__('Existing Values...','pmxi_plugin').'</option>';

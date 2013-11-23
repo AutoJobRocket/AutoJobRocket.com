@@ -104,10 +104,10 @@ final class PMXI_Session extends PMXI_ArrayAccess implements Iterator, Countable
 		}								
 		else{
 			try{
-				$path = session_save_path(); 
+				$path = @session_save_path(); 
 				if ( ! @is_dir($path) or ! @is_writable($path)){
 					@ini_set("session.save_handler", "files");
-					session_save_path(sys_get_temp_dir());	
+					@session_save_path(sys_get_temp_dir());	
 				}
 			} catch (XmlImportException $e) {
 				
@@ -198,7 +198,6 @@ final class PMXI_Session extends PMXI_ArrayAccess implements Iterator, Countable
 		$this->data = $this->toArray();
 
 		// Only write the collection to the DB if it's changed.
-		//if ( $this->dirty ) {
 		if ($this->session_mode == "database"){
 			if ( false === get_option( $option_key ) ) {
 				add_option( "_pmxi_session_{$this->session_id}", $this->container, '', 'no' );
@@ -217,10 +216,9 @@ final class PMXI_Session extends PMXI_ArrayAccess implements Iterator, Countable
 				@file_put_contents( PMXI_ROOT_DIR . "/sessions/_pmxi_session_expires_{$this->session_id}.txt", $this->expires );
 			}
 		}
-		else{
-			$_SESSION = $this->toArray();			
-		}
-		//}		
+		else{			
+			$session = $this->toArray(); $_SESSION['pmxi_import'] = $session['pmxi_import'];
+		}	
 
 	}
 

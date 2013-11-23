@@ -218,7 +218,7 @@
 
 			$uploads = wp_upload_dir();
 			$tmpname = wp_unique_filename($uploads['path'], ($type and strlen(basename($filePath)) < 30) ? basename($filePath) : time());	
-			$localPath = $uploads['path']  .'/'. $tmpname;		  	   	
+			$localPath = $uploads['path']  .'/'. url_title($tmpname);
 
 			$file = @fopen($filePath, "rb");
 
@@ -260,8 +260,10 @@
 
 			$type = 'csv';
 			$uploads = wp_upload_dir();
-			$tmpname = wp_unique_filename($uploads['path'], (strlen(basename($filePath)) < 30) ? basename($filePath) : time());	
-			$fp = @fopen($uploads['path']  .'/'. $tmpname, 'w');
+			$tmpname = wp_unique_filename($uploads['path'], (strlen(basename($filename)) < 30) ? basename($filename) : time());	
+			$localPath = $uploads['path']  .'/'. url_title($tmpname);
+
+			$fp = @fopen($localPath, 'w');
 
 		    $file = @gzopen($filename, 'rb', $use_include_path);
 		    if ($file) {
@@ -274,7 +276,7 @@
 		        gzclose($file);
 		    }
 		    @fclose($fp);
-		    $localPath = $uploads['path']  .'/'. $tmpname;
+		   
 		    return array('type' => $type, 'localPath' => $localPath);
 		}
 	}

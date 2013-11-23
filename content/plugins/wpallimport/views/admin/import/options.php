@@ -115,11 +115,15 @@
 				<div id="pages" class="pmxi_tab">
 					<form class="options <?php echo ! $this->isWizard ? 'edit' : '' ?>" method="post">
 						<input type="hidden" name="type" value="page"/>
-						<input type="hidden" name="custom_type" value=""/>
+						<input type="hidden" name="custom_type" value=""/>						
 						<div class="post-type-options">
 							<table class="form-table" style="max-width:none;">
 
-								<?php include( 'options/_main_options_template.php' ); ?>
+								<?php 
+									$post_type = 'post';
+									$entry = 'page';
+									include( 'options/_main_options_template.php' ); 
+								?>
 
 								<tr>
 									<td align="center" width="33%">
@@ -138,9 +142,7 @@
 										<input type="text" class="" name="order" value="<?php echo esc_attr($post['order']) ?>" />
 									</td>
 								</tr>
-								<?php
-									$post_type = 'post';
-									$entry = 'page';
+								<?php									
 									include( 'options/_custom_fields_template.php' );
 									include( 'options/_taxonomies_template.php' );
 									include( 'options/_featured_template.php' );
@@ -234,3 +236,35 @@
 	</td>	
 </tr>
 </table>
+<div id="record_matching_pointer" style="display:none;">	
+	<h3>Record Matching</h3>
+
+	<p>
+		<b>Record Matching is how WP All Import matches records in your file with posts that already exist WordPress.</b>
+	</p>
+
+	<p>
+		Record Matching is most commonly used to tell WP All Import how to match up records in your file with posts WP All Import has already created on your site, so that if your file is updated with new data, WP All Import can update your posts accordingly.
+	</p>
+
+	<hr />
+
+	<p>AUTOMATIC RECORD MATCHING</p>
+	
+	<p>
+		Automatic Record Matching allows WP All Import to update records that were imported or updated during the last run of this same import.
+	</p>
+
+	<p>
+		Your unique key must be UNIQUE for each record in your feed. Make sure you get it right - you can't change it later. You'll have to re-create your import.
+	</p>
+
+	<hr />
+
+	<p>MANUAL RECORD MATCHING</p>
+	
+	<p>
+		Manual record matching allows WP All Import to update any records, even records that were not imported with WP All Import, or are part of a different import.
+	</p>
+
+</div>

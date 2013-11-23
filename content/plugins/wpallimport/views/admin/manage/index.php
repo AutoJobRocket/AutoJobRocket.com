@@ -170,7 +170,7 @@ $columns = array(
 							case 'name':
 								?>
 								<td>
-									<strong><?php echo (!empty($item['friendly_name'])) ? $item['friendly_name'] : $item['name']; ?></strong> <br>
+									<strong><?php echo (!empty($item['friendly_name'])) ? $item['friendly_name'] : $item['name']; ?></strong> <?php if ( (int) $item['triggered']) _e("<i> -> Import triggered...</i>"); if ( (int) $item['processing']) _e("<i> -> Import currently in progress....</i>");  ?><br>
 									<?php if ($item['path']): ?>
 										<em><?php echo str_replace("\\", '/', preg_replace('%^(\w+://[^:]+:)[^@]+@%', '$1*****@', $item['path'])); ?></em>
 									<?php endif ?>
@@ -187,7 +187,7 @@ $columns = array(
 										<span class="update"><a class="update" href="<?php echo esc_url(add_query_arg(array('page' => 'pmxi-admin-import', 'id' => $item['id']), admin_url('admin.php'))) ?>"><?php _e('Re-Run With New File', 'pmxi_plugin') ?></a></span> |
 										<span class="update"><a class="update" href="<?php echo esc_url(add_query_arg(array('id' => $item['id'], 'action' => 'log'), $this->baseUrl)) ?>"><?php _e('Download Log', 'pmxi_plugin') ?></a></span> |
 										<span class="delete"><a class="delete" href="<?php echo esc_url(add_query_arg(array('id' => $item['id'], 'action' => 'delete'), $this->baseUrl)) ?>"><?php _e('Delete', 'pmxi_plugin') ?></a></span>
-										<?php if ( "Yes" == $item['large_import'] and $item['imported'] != $item['count']):?>
+										<?php if ( ($item['imported'] + $item['skipped']) != $item['count'] and ! $item['options']['is_import_specified'] and ! (int) $item['triggered'] ):?>
 										| <span class="update"><a class="update" href="<?php echo esc_url(add_query_arg(array('id' => $item['id'], 'action' => 'update', 'type' => 'continue'), $this->baseUrl)) ?>"><?php _e('Continue import', 'pmxi_plugin') ?></a></span>
 										<?php endif; ?>
 									</div>

@@ -24,7 +24,7 @@ class PMXI_Admin_Manage extends PMXI_Controller_Admin {
 			'order_by' => 'registered_on',
 			'order' => 'DESC',
 			'pagenum' => 1,
-			'perPage' => 10,
+			'perPage' => 25,
 		));
 		$get['pagenum'] = absint($get['pagenum']);
 		extract($get);
@@ -54,9 +54,13 @@ class PMXI_Admin_Manage extends PMXI_Controller_Admin {
 			'current' => $pagenum,
 		));
 		
-		//unset(PMXI_Plugin::$session['pmxi_import']);
-
 		pmxi_session_unset();
+
+		$uploads = wp_upload_dir();
+
+		foreach (PMXI_Helper::safe_glob($uploads['path'] . '/pmxi_chunk_*', PMXI_Helper::GLOB_RECURSE | PMXI_Helper::GLOB_PATH) as $filePath) {
+			@file_exists($filePath) and @unlink($filePath);		
+		}
 
 		$this->render();
 	}
@@ -107,14 +111,12 @@ class PMXI_Admin_Manage extends PMXI_Controller_Admin {
 	public function update() {
 		$id = $this->input->get('id');
 		$action_type = $this->input->get('type');
-		$pointer = 0;
 
 		$this->data['item'] = $item = new PMXI_Import_Record();
 		if ( ! $id or $item->getById($id)->isEmpty()) {
 			wp_redirect($this->baseUrl); die();
 		}				
 		
-		//unset(PMXI_Plugin::$session['pmxi_import']);
 		pmxi_session_unset();
 
 		if ($this->input->post('is_confirmed')) {
@@ -149,24 +151,31 @@ class PMXI_Admin_Manage extends PMXI_Controller_Admin {
 
 				if ( $is_ftp_ok ){						
 
-					$files = PMXI_Helper::safe_glob($item->path, PMXI_Helper::GLOB_NODIR | PMXI_Helper::GLOB_PATH);
+					$files = (strpos($item->path, "*") !== false) ? PMXI_Helper::safe_glob($item->path, PMXI_Helper::GLOB_NODIR | PMXI_Helper::GLOB_PATH) : array($item->path);
 					$local_paths = array();
 
 					if ($files) {
 						foreach ($files as $singlePath) {
 
-							$parsed_url = parse_url($singlePath);						
+							if (preg_match('%\W(xml|csv|txt|dat|psv)$%i', trim($singlePath)) and @is_file($singlePath)){
 
-							$local_file = $uploads['path']  .'/'. basename($parsed_url['path']);										
-							
-							$c = curl_init($singlePath);
-							// $local is the location to store file on local machine
-							$fh = fopen($local_file, 'w') or $this->errors->add('form-validation', __('There was a problem while downloading ' . $singlePath . ' to ' . $local_file, 'pmxi_plugin'));
-							curl_setopt($c, CURLOPT_FILE, $fh);
-							curl_exec($c);
-							curl_close($c);							
+								$parsed_url = parse_url($singlePath);						
 
-							$local_paths[] = $local_file;
+								$local_file = $uploads['path']  .'/'. basename($parsed_url['path']);										
+								$local = @fopen($local_file,"w"); 
+								$result = @ftp_fget($conn_id, $local, $parsed_url["path"], FTP_BINARY); 
+
+								if (!$result) { 
+									$c = curl_init($singlePath);
+									// $local is the location to store file on local machine
+									$fh = fopen($local_file, 'w') or $this->errors->add('form-validation', __('There was a problem while downloading ' . $singlePath . ' to ' . $local_file, 'pmxi_plugin'));
+									curl_setopt($c, CURLOPT_FILE, $fh);
+									curl_exec($c);
+									curl_close($c);							
+								}						
+
+								$local_paths[] = $local_file;
+							}
 						}
 						
 						foreach ($local_paths as $key => $path) {
@@ -190,8 +199,8 @@ class PMXI_Admin_Manage extends PMXI_Controller_Admin {
 									$localPath = '';
 
 									if (!empty($v_result_list)){
-										foreach ($v_result_list as $unzipped_file) {
-											if ($unzipped_file['status'] == 'ok') $localPath = $unzipped_file['filename'];
+										foreach ($v_result_list as $unzipped_file) {											
+											if ($unzipped_file['status'] == 'ok' and preg_match('%\W(xml|csv|txt|dat|psv)$%i', trim($unzipped_file['stored_filename']))) { $localPath = $unzipped_file['filename']; break; }	
 										}
 									}
 							    	if($uploads['error']){
@@ -240,10 +249,10 @@ class PMXI_Admin_Manage extends PMXI_Controller_Admin {
 				
 			} 
 
-			if ($item->large_import == 'No' or ($item->large_import == 'Yes' and empty(PMXI_Plugin::$session->data['pmxi_import']['chunk_number']))) {			
+			if ( empty(PMXI_Plugin::$session->data['pmxi_import']['chunk_number']) ) {			
 				
 				if ($item->type == 'url'){
-
+					
 					if ('zip' == $item->feed_type or '' == $item->feed_type and preg_match('%\W(zip)$%i', trim($item->path))) {							
 					
 						$tmpname = $uploads['path'] . '/' . wp_unique_filename($uploads['path'], basename($item->path));
@@ -269,8 +278,8 @@ class PMXI_Admin_Manage extends PMXI_Controller_Admin {
 							$filePath = '';
 
 							if (!empty($v_result_list)){
-								foreach ($v_result_list as $unzipped_file) {
-									if ($unzipped_file['status'] == 'ok') $filePath = $unzipped_file['filename'];
+								foreach ($v_result_list as $unzipped_file) {									
+									if ($unzipped_file['status'] == 'ok' and preg_match('%\W(xml|csv|txt|dat|psv)$%i', trim($unzipped_file['stored_filename']))) { $filePath = $unzipped_file['filename']; break; }	
 								}
 							}
 					    	if($uploads['error']){
@@ -298,17 +307,10 @@ class PMXI_Admin_Manage extends PMXI_Controller_Admin {
 							    }						
 							}													
 
-							if (preg_match('%\W(csv|txt|dat|psv)$%i', trim($filePath))){
-															
-								if (empty($item->large_import) or $item->large_import == 'No') {
-									$filePath = PMXI_Plugin::csv_to_xml($filePath);																	
-								}
-								else{										
-									include_once(PMXI_Plugin::ROOT_DIR.'/libraries/XmlImportCsvParse.php');
-									$csv = new PMXI_CsvParser($filePath, true, '', ( ! empty($item->options['delimiter']) ) ? $item->options['delimiter'] : '', ( ! empty($item->options['encoding']) ) ? $item->options['encoding'] : '' ); // create chunks
-									$filePath = $csv->xml_path;									   					  
-								}	
-
+							if (preg_match('%\W(csv|txt|dat|psv)$%i', trim($filePath))){																																
+								include_once(PMXI_Plugin::ROOT_DIR.'/libraries/XmlImportCsvParse.php');
+								$csv = new PMXI_CsvParser($filePath, true, '', ( ! empty($item->options['delimiter']) ) ? $item->options['delimiter'] : '', ( ! empty($item->options['encoding']) ) ? $item->options['encoding'] : '' ); // create chunks
+								$filePath = $csv->xml_path;									   					  									
 							}							
 						}
 						
@@ -316,15 +318,10 @@ class PMXI_Admin_Manage extends PMXI_Controller_Admin {
 														
 						// copy remote file in binary mode
 						$filePath = pmxi_copy_url_file($item->path);									
-
-						if (empty($item->large_import) or $item->large_import == 'No') {																				
-							$filePath = PMXI_Plugin::csv_to_xml($filePath); // convert CSV to XML																					
-						}
-						else {					
-							include_once(PMXI_Plugin::ROOT_DIR.'/libraries/XmlImportCsvParse.php');					
-							$csv = new PMXI_CsvParser($filePath, true, '', ( ! empty($item->options['delimiter']) ) ? $item->options['delimiter'] : '', ( ! empty($item->options['encoding']) ) ? $item->options['encoding'] : ''); // create chunks
-							$filePath = $csv->xml_path;						
-						}
+									
+						include_once(PMXI_Plugin::ROOT_DIR.'/libraries/XmlImportCsvParse.php');					
+						$csv = new PMXI_CsvParser($filePath, true, '', ( ! empty($item->options['delimiter']) ) ? $item->options['delimiter'] : '', ( ! empty($item->options['encoding']) ) ? $item->options['encoding'] : ''); // create chunks
+						$filePath = $csv->xml_path;												
 
 					} else {
 						
@@ -332,15 +329,10 @@ class PMXI_Admin_Manage extends PMXI_Controller_Admin {
 						$filePath = $fileInfo['localPath'];														
 
 						// detect CSV or XML 
-						if ( $fileInfo['type'] == 'csv') { // it is CSV file									
-							if (empty($item->large_import) or $item->large_import == 'No') {																
-								$filePath = PMXI_Plugin::csv_to_xml($filePath); // convert CSV to XML																						
-							}
-							else{																
-								include_once(PMXI_Plugin::ROOT_DIR.'/libraries/XmlImportCsvParse.php');					
-								$csv = new PMXI_CsvParser($filePath, true, '', ( ! empty($item->options['delimiter']) ) ? $item->options['delimiter'] : '', ( ! empty($item->options['encoding']) ) ? $item->options['encoding'] : ''); // create chunks
-								$filePath = $csv->xml_path;												
-							}
+						if ( $fileInfo['type'] == 'csv') { // it is CSV file																
+							include_once(PMXI_Plugin::ROOT_DIR.'/libraries/XmlImportCsvParse.php');					
+							$csv = new PMXI_CsvParser($filePath, true, '', ( ! empty($item->options['delimiter']) ) ? $item->options['delimiter'] : '', ( ! empty($item->options['encoding']) ) ? $item->options['encoding'] : ''); // create chunks
+							$filePath = $csv->xml_path;																			
 						}
 					}
 
@@ -359,8 +351,8 @@ class PMXI_Admin_Manage extends PMXI_Controller_Admin {
 							$filePath = '';
 
 							if (!empty($v_result_list)){
-								foreach ($v_result_list as $unzipped_file) {
-									if ($unzipped_file['status'] == 'ok') $filePath = $unzipped_file['filename'];
+								foreach ($v_result_list as $unzipped_file) {									
+									if ($unzipped_file['status'] == 'ok' and preg_match('%\W(xml|csv|txt|dat|psv)$%i', trim($unzipped_file['stored_filename']))) { $filePath = $unzipped_file['filename']; break; }	
 								}
 							}
 					    	if($uploads['error']){
@@ -392,15 +384,10 @@ class PMXI_Admin_Manage extends PMXI_Controller_Admin {
 
 								if($uploads['error']){
 									 $this->errors->add('form-validation', __('Can not create upload folder. Permision denied', 'pmxi_plugin'));
-								}																		
-								if (empty($item->large_import) or $item->large_import == 'No') {
-									$filePath = PMXI_Plugin::csv_to_xml($filePath);																	
-								}
-								else{										
-									include_once(PMXI_Plugin::ROOT_DIR.'/libraries/XmlImportCsvParse.php');
-									$csv = new PMXI_CsvParser($filePath, true, '', ( ! empty($item->options['delimiter']) ) ? $item->options['delimiter'] : '', ( ! empty($item->options['encoding']) ) ? $item->options['encoding'] : ''); // create chunks
-									$filePath = $csv->xml_path;								
-								}
+								}																																			
+								include_once(PMXI_Plugin::ROOT_DIR.'/libraries/XmlImportCsvParse.php');
+								$csv = new PMXI_CsvParser($filePath, true, '', ( ! empty($item->options['delimiter']) ) ? $item->options['delimiter'] : '', ( ! empty($item->options['encoding']) ) ? $item->options['encoding'] : ''); // create chunks
+								$filePath = $csv->xml_path;																
 							}							
 						}					
 
@@ -408,27 +395,19 @@ class PMXI_Admin_Manage extends PMXI_Controller_Admin {
 						if($uploads['error']){
 							 $this->errors->add('form-validation', __('Can not create upload folder. Permision denied', 'pmxi_plugin'));
 						}									
-		    			$filePath = $post['filepath'];					
-						if (empty($item->large_import) or $item->large_import == 'No') {
-							$filePath = PMXI_Plugin::csv_to_xml($item->path);					
-						} else{										
-							include_once(PMXI_Plugin::ROOT_DIR.'/libraries/XmlImportCsvParse.php');					
-							$csv = new PMXI_CsvParser($item->path, true, '', ( ! empty($item->options['delimiter']) ) ? $item->options['delimiter'] : '', ( ! empty($item->options['encoding']) ) ? $item->options['encoding'] : '');					
-							$filePath = $csv->xml_path;						
-						}					   					
+		    			$filePath = $post['filepath'];																		
+						include_once(PMXI_Plugin::ROOT_DIR.'/libraries/XmlImportCsvParse.php');					
+						$csv = new PMXI_CsvParser($item->path, true, '', ( ! empty($item->options['delimiter']) ) ? $item->options['delimiter'] : '', ( ! empty($item->options['encoding']) ) ? $item->options['encoding'] : '');					
+						$filePath = $csv->xml_path;						
+
 					} elseif(preg_match('%\W(gz)$%i', trim($item->path))){ // If gz file uploaded
 						$fileInfo = pmxi_gzfile_get_contents($item->path);
 						$filePath = $fileInfo['localPath'];				
 						// detect CSV or XML 
-						if ( $fileInfo['type'] == 'csv') { // it is CSV file									
-							if (empty($item->large_import) or $item->large_import == 'No') {																
-								$filePath = PMXI_Plugin::csv_to_xml($filePath); // convert CSV to XML																						
-							}
-							else{																
-								include_once(PMXI_Plugin::ROOT_DIR.'/libraries/XmlImportCsvParse.php');					
-								$csv = new PMXI_CsvParser($filePath, true, '', ( ! empty($item->options['delimiter']) ) ? $item->options['delimiter'] : '', ( ! empty($item->options['encoding']) ) ? $item->options['encoding'] : ''); // create chunks
-								$filePath = $csv->xml_path;												
-							}
+						if ( $fileInfo['type'] == 'csv') { // it is CSV file																
+							include_once(PMXI_Plugin::ROOT_DIR.'/libraries/XmlImportCsvParse.php');					
+							$csv = new PMXI_CsvParser($filePath, true, '', ( ! empty($item->options['delimiter']) ) ? $item->options['delimiter'] : '', ( ! empty($item->options['encoding']) ) ? $item->options['encoding'] : ''); // create chunks
+							$filePath = $csv->xml_path;																			
 						}
 					} else { // If XML file uploaded					
 						
@@ -436,109 +415,54 @@ class PMXI_Admin_Manage extends PMXI_Controller_Admin {
 						
 					}
 
-				}
+				}																						
 
-				if (empty($xml)){
-					
-					if ($item->large_import == 'Yes'){
-						
-						@set_time_limit(0);			
+				@set_time_limit(0);			
+				$chunks = 0;								
+				$local_paths = !empty($local_paths) ? $local_paths : array($filePath);								
 
-						$chunks = 0;
-						
-						$chunk_path = '';
+				foreach ($local_paths as $key => $path) {
 
-						$local_paths = !empty($local_paths) ? $local_paths : array($filePath);				
-
-						$chunk_founded = false;
-
-						foreach ($local_paths as $key => $path) {
-
-							$file = new PMXI_Chunk($path, array('element' => $item->root_element, 'path' => $uploads['path']));					
-						    						    
-						    while ($xml = $file->read()) {					      						    					    					    	
-						    	
-						    	if (!empty($xml))
-						      	{				
-						      		if (!empty($action_type) and $action_type == 'continue'){ 
-						      			if ( !$chunk_founded) {											
-						      				$xml = $file->encoding . "\n" . $xml;
-								      		PMXI_Import_Record::preprocessXml($xml);	      						      							      					      		
-									      					      		
-									      	$dom = new DOMDocument('1.0', ( ! empty($item->options['encoding']) ) ? $item->options['encoding'] : 'UTF-8');															
-											$old = libxml_use_internal_errors(true);
-											$dom->loadXML(preg_replace('%xmlns\s*=\s*([\'"]).*\1%sU', '', $xml)); // FIX: libxml xpath doesn't handle default namespace properly, so remove it upon XML load							
-											libxml_use_internal_errors($old);
-											$xpath = new DOMXPath($dom);
-											if (($elements = @$xpath->query($item->xpath)) and !empty($elements) and !empty($elements->length)) $chunk_founded = true;
-											unset($dom, $xpath, $elements);
-						      			}						      			
-						      			$chunks++;
-						      			if ($chunks == $item->imported){
-											$pointer = $file->pointer;
-											$chunks = $item->count;
-											break;
-										}
-									}
-									else{
-							      		$xml = $file->encoding . "\n" . $xml;
-							      		PMXI_Import_Record::preprocessXml($xml);	      						      							      					      		
-								      					      		
-								      	$dom = new DOMDocument('1.0', ( ! empty($item->options['encoding']) ) ? $item->options['encoding'] : 'UTF-8');															
-										$old = libxml_use_internal_errors(true);
-										$dom->loadXML(preg_replace('%xmlns\s*=\s*([\'"]).*\1%sU', '', $xml)); // FIX: libxml xpath doesn't handle default namespace properly, so remove it upon XML load							
-										libxml_use_internal_errors($old);
-										$xpath = new DOMXPath($dom);
-										if (($elements = @$xpath->query($item->xpath)) and !empty($elements) and !empty($elements->length)) $chunks++;
-										unset($dom, $xpath, $elements);
-									}
-							    }
-							}	
-							unset($file);		
-							
-							!$key and $filePath = $path;					
-						}
-
-						if (empty($chunks)) 
-							$this->errors->add('form-validation', __('No matching elements found for Root element and XPath expression specified', 'pmxi_plugin'));						
-						
-					} else {
-
-						ob_start();
-						$filePath && @readgzfile($filePath);					
-						$xml = ob_get_clean();										
-				
-						if (empty($xml)){
-							$xml = @file_get_contents($filePath);										
-							if (empty($xml)) get_file_curl($filePath, $uploads['path']  .'/'. basename($filePath));
-							if (empty($xml)) $xml = @file_get_contents($uploads['path']  .'/'. basename($filePath));
-						}
-					}								   
-				}					
-			}					
-
-			if ($item->large_import == 'Yes' or PMXI_Import_Record::validateXml($xml, $this->errors)) { // xml is valid		
-				
-				if ( ! PMXI_Plugin::is_ajax() and empty(PMXI_Plugin::$session->data['pmxi_import']['chunk_number'])){
-				
-					$item->set(array(
-							'processing' => 0,
-							'queue_chunk_number' => 0,
-							'current_post_ids' => ''
-						))->save();
-
-					if (empty($action_type)){
-						$item->set(array(						
-							'imported' => 0,
-							'created' => 0,
-							'updated' => 0,
-							'skipped' => 0
-						))->save();
+					if (!empty($action_type) and $action_type == 'continue'){
+						$chunks = $item->count;							
 					}
+					else{
+
+						$file = new PMXI_Chunk($path, array('element' => $item->root_element, 'encoding' => $item->options['encoding']));					
+				    						    
+					    while ($xml = $file->read()) {					      						    					    					    	
+					    	
+					    	if (!empty($xml))
+					      	{												      		
+					      		$xml = "<?xml version=\"1.0\" encoding=\"". $item->options['encoding'] ."\"?>" . "\n" . $xml;
+					      		PMXI_Import_Record::preprocessXml($xml);	      						      							      					      		
+						      					      		
+						      	$dom = new DOMDocument('1.0', ( ! empty($item->options['encoding']) ) ? $item->options['encoding'] : 'UTF-8');															
+								$old = libxml_use_internal_errors(true);
+								$dom->loadXML(preg_replace('%xmlns.*=\s*([\'"]).*\1%sU', '', $xml)); // FIX: libxml xpath doesn't handle default namespace properly, so remove it upon XML load							
+								libxml_use_internal_errors($old);
+								$xpath = new DOMXPath($dom);
+								if (($elements = @$xpath->query($item->xpath)) and !empty($elements) and !empty($elements->length)) $chunks += $elements->length;
+								unset($dom, $xpath, $elements);										
+						    }
+						}	
+						unset($file);
+					}
+														
+					!$key and $filePath = $path;					
+				}				
+
+				if (empty($chunks)) 
+					$this->errors->add('form-validation', __('No matching elements found for Root element and XPath expression specified', 'pmxi_plugin'));						
+																		   							
+			}							
+			
+			if ( $chunks ) { // xml is valid		
+				
+				if ( ! PMXI_Plugin::is_ajax() and empty(PMXI_Plugin::$session->data['pmxi_import']['chunk_number'])){								
 
 					// compose data to look like result of wizard steps				
-					PMXI_Plugin::$session['pmxi_import'] = array(
-						//'xml' => (isset($xml)) ? $xml : '',
+					PMXI_Plugin::$session['pmxi_import'] = array(						
 						'filePath' => $filePath,
 						'source' => array(
 							'name' => $item->name,
@@ -555,17 +479,13 @@ class PMXI_Admin_Manage extends PMXI_Controller_Admin {
 						'is_csv' => (!empty($item->options['delimiter'])) ? $item->options['delimiter'] : PMXI_Plugin::$is_csv,
 						'csv_path' => PMXI_Plugin::$csv_path,
 						'scheduled' => $item->scheduled,				
-						'current_post_ids' => '',
-						'large_file' => ($item->large_import == 'Yes') ? true : false,
-						'chunk_number' => (!empty($action_type) and $action_type == 'continue') ? $item->imported : 1,
-						'pointer' => $pointer,
-						'log' => '',
-						'created_records' => (!empty($action_type) and $action_type == 'continue') ? $item->created : 0,
-						'updated_records' => (!empty($action_type) and $action_type == 'continue') ? $item->updated : 0,
-						'skipped_records' => (!empty($action_type) and $action_type == 'continue') ? $item->skipped : 0,
+						'current_post_ids' => '',						
+						'chunk_number' => 1,						
+						'log' => '',						
 						'warnings' => 0,
 						'errors' => 0,
 						'start_time' => 0,
+						'pointer' => 1,
 						'count' => (isset($chunks)) ? $chunks : 0,
 						'local_paths' => (!empty($local_paths)) ? $local_paths : array(), // ftp import local copies of remote files
 						'action' => (!empty($action_type) and $action_type == 'continue') ? 'continue' : 'update',					

@@ -23,11 +23,7 @@
 					if ($is_csv !== false){
 						?>										
 						<ul class="set_csv_delimiter">
-							<li>Set delimiter for CSV fields: </li>
-							<!--li> <a href="javascript:void(0);" rel="," <?php if ($is_csv == ','):?>class="delimiter_selected"<?php endif;?>><?php _e('comma', 'pmxi_plugin');?></a> </li>
-							<li> <a href="javascript:void(0);" rel=";" <?php if ($is_csv == ';'):?>class="delimiter_selected"<?php endif;?>><?php _e('semicolon', 'pmxi_plugin');?></a> </li>
-							<li> <a href="javascript:void(0);" rel="|" <?php if ($is_csv == '|'):?>class="delimiter_selected"<?php endif;?>><?php _e('pipe', 'pmxi_plugin');?></a> </li>
-							<li> <a href="javascript:void(0);" rel="\t" <?php if ($is_csv == '\t'):?>class="delimiter_selected"<?php endif;?>><?php _e('tabulation', 'pmxi_plugin');?></a> </li-->
+							<li><?php _e("Set delimiter for CSV fields:",'pmxi_plugin');?> </li>							
 							<li> <input type="text" value="<?php echo $is_csv;?>" name="delimiter"/> <input type="button" name="apply_delimiter" value="Apply"/></li>
 						</ul>
 						<?php
