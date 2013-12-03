@@ -4,3 +4,6 @@
 [submodule "content/themes/enterprise/core"]
 	path = content/themes/enterprise/core
 	url = https://github.com/justintadlock/hybrid-core.git
+[submodule "content/themes/jobify"]
+	path = content/themes/jobify
+	url = git@github.com:AutoJobRocket/Jobify.git
