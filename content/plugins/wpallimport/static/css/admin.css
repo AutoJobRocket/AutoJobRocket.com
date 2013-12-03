@@ -259,7 +259,7 @@
 }
 	.pmxi_plugin table.form-table td,
 	.pmxi_plugin table.form-table th {
-		padding: 0;
+		/*padding: 0;*/
 		vertical-align: top;
 	}
 	.pmxi_plugin .post-type-options table.form-table th {
@@ -1193,3 +1193,82 @@ table.xml table {
 .pmxi_plugin .pl17{
 	padding-left:17px;
 }
+
+/*--------------------------------------------------------------------------
+*
+*	Add-Ons
+*	
+*-------------------------------------------------------------------------*/
+
+.pmxi_plugin #pmxi-add-ons {
+	margin-bottom: 20px;
+}
+
+.pmxi_plugin .pmxi-add-on-group {
+	margin-top: 20px;
+	padding-top: 20px;
+	border-top: #F5F5F5 solid 1px;	
+}
+
+.pmxi_plugin .pmxi-add-on-group:first-child {
+	margin-top: 0;
+	padding-top: 0;
+	border-top: 0 none;	
+}
+
+.pmxi_plugin .pmxi-add-on {
+	float: left;
+	width: 220px;
+	margin: 10px;
+}
+
+.pmxi_plugin .pmxi-add-on h3 {
+	margin-top: 0.5em;
+}
+
+.pmxi_plugin .pmxi-add-on h3 a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.pmxi_plugin .pmxi-add-on .inner {
+	min-height: 145px;
+}
+
+.pmxi_plugin .pmxi-add-on-active .button {
+	padding-left: 4px;
+}
+
+.pmxi_plugin .pmxi-sprite-tick {
+	width: 14px;
+	height: 14px;
+	margin: 4px 5px 0 0;
+	background-position: 0px -300px;
+}
+
+.pmxi_plugin .wp-box {
+    background: none repeat scroll 0 0 #FFFFFF;
+    border: 1px solid #E1E1E1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+.pmxi_plugin .wp-box .inner {
+    padding: 15px;
+}
+.pmxi_plugin .wp-box .footer{
+	background: none repeat scroll 0 0 #F5F5F5;
+	border-top: 1px solid #E1E1E1;
+	overflow: hidden;
+	padding: 10px;	
+	position: absolute;
+	bottom:0;	
+	width:91%;
+}
+
+#pmxi-add-ons .pmxi-add-on-title {
+	float: left;
+	width: 100%;
+	margin: 25px 0 25px;
+	border-top: #F5F5F5 solid 1px;
+}
+

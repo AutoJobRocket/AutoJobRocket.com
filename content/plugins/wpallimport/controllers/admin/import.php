@@ -62,7 +62,7 @@ class PMXI_Admin_Import extends PMXI_Controller_Admin {
 		}				
 
 		if (empty(PMXI_Plugin::$session->data['pmxi_import'])
-			or ! @$dom->loadXML(preg_replace('%xmlns\s*=\s*([\'"]).*\1%sU', '', $xml))// FIX: libxml xpath doesn't handle default namespace properly, so remove it upon XML load
+			or ! @$dom->loadXML($xml)// FIX: libxml xpath doesn't handle default namespace properly, so remove it upon XML load
 			//or empty(PMXI_Plugin::$session['pmxi_import']['source'])
 			or ! empty(PMXI_Plugin::$session->data['pmxi_import']['update_previous']) and $update_previous->getById(PMXI_Plugin::$session->data['pmxi_import']['update_previous'])->isEmpty()			
 		) {					
@@ -426,8 +426,8 @@ class PMXI_Admin_Import extends PMXI_Controller_Admin {
 					
 					if ($file_path_array) {
 						foreach ($file_path_array as $singlePath) { 
-
-							if (preg_match('%\W(xml|csv|txt|dat|psv)$%i', trim($singlePath)) and @is_file($singlePath)){								
+							
+							if (preg_match('%\W(xml|csv|txt|dat|psv|gz|zip)$%i', trim($singlePath))){
 
 								$parsed_url = parse_url($singlePath);
 
@@ -466,7 +466,7 @@ class PMXI_Admin_Import extends PMXI_Controller_Admin {
 						'name' => basename($singlePath),
 						'type' => 'ftp',
 						'path' => $filePath,							
-					);					
+					);										
 
 					foreach ($local_paths as $key => $path) {	
 
@@ -676,9 +676,16 @@ class PMXI_Admin_Import extends PMXI_Controller_Admin {
 			$this->errors->add('form-validation', __('Previous import for update must be selected to proceed with a new one', 'pmxi_plugin'));
 		}
 
-		$this->data['detection_feed_extension'] = false;
+		$this->data['detection_feed_extension'] = false;		
+
+		if ( ! class_exists('DOMDocument') ) {
+			$this->errors->add('form-validation', __('Class \'DOMDocument\' not found.', 'pmxi_plugin')); 						
+		}
+		if ( ! class_exists('XMLReader') ) {
+			$this->errors->add('form-validation', __('Class \'XMLReader\' not found.', 'pmxi_plugin')); 						
+		}
 		
-		if ($this->input->post('is_submitted') and ! $this->errors->get_error_codes()) {
+		if ($this->input->post('is_submitted') and ! $this->errors->get_error_codes()) {			
 				
 			check_admin_referer('choose-file', '_wpnonce_choose-file');					 														
 			$elements_cloud = array();																					
@@ -701,7 +708,7 @@ class PMXI_Admin_Import extends PMXI_Controller_Admin {
 					
 				}
 				else $this->errors->add('form-validation', __('Unable to download feed resource.', 'pmxi_plugin')); 
-			}
+			}			
 			
 			if ( ! $this->errors->get_error_codes() ) {
 				
@@ -744,13 +751,16 @@ class PMXI_Admin_Import extends PMXI_Controller_Admin {
 				}		
 
 				pmxi_session_commit(); 						
-
-				if ( ! class_exists('DOMDocument') ) {
-					$this->errors->add('form-validation', __('Class \'DOMDocument\' not found.', 'pmxi_plugin')); 						
+				
+				$xml = $this->get_xml();
+				if (empty($xml))
+				{
+					$this->errors->add('form-validation', __('Please confirm you are importing a valid feed.<br/> Often, feed providers distribute feeds with invalid data, improperly wrapped HTML, line breaks where they should not be, faulty character encodings, syntax errors in the XML, and other issues.<br/><br/>WP All Import has checks in place to automatically fix some of the most common problems, but we can’t catch every single one.<br/><br/>It is also possible that there is a bug in WP All Import, and the problem is not with the feed.<br/><br/>If you need assistance, please contact support – <a href="mailto:support@soflyy.com">support@soflyy.com</a> – with your XML/CSV file. We will identify the problem and release a bug fix if necessary.', 'pmxi_plugin')); 
+					if ( "" != PMXI_Plugin::$is_csv) $this->errors->add('form-validation', __('Probably your CSV feed contains HTML code. In this case, you can enable the <strong>"My CSV feed contains HTML code"</strong> option on the settings screen.', 'pmxi_plugin')); 
 				}
-				else {
+				else{
 					wp_redirect(add_query_arg('action', 'element', $this->baseUrl)); die();
-				}
+				}				
 
 			} else if ('url' == $this->input->post('type') and !empty($this->errors)){
 				$this->errors->add('form-validation', __('Probably plugin can\'t make a correct detection of feed extension.', 'pmxi_plugin')); 
@@ -913,12 +923,12 @@ class PMXI_Admin_Import extends PMXI_Controller_Admin {
 
 			    	if (!empty($xml))
 			      	{
-			      		$xml = "<?xml version=\"1.0\" encoding=\"". PMXI_Plugin::$session->data['pmxi_import']['encoding'] ."\"?>" . "\n" . $xml;		
 			      		PMXI_Import_Record::preprocessXml($xml);
+			      		$xml = "<?xml version=\"1.0\" encoding=\"". PMXI_Plugin::$session->data['pmxi_import']['encoding'] ."\"?>" . "\n" . $xml;					      		
 				      	
 				      	$dom = new DOMDocument('1.0', PMXI_Plugin::$session->data['pmxi_import']['encoding']);
 						$old = libxml_use_internal_errors(true);
-						$dom->loadXML(preg_replace('%xmlns.*=\s*([\'"]).*\1%sU', '', $xml));
+						$dom->loadXML($xml);
 						libxml_use_internal_errors($old);
 						$xpath = new DOMXPath($dom);
 						
@@ -1185,13 +1195,12 @@ class PMXI_Admin_Import extends PMXI_Controller_Admin {
 				    
 				    	if (!empty($xml))
 				      	{						      			
-
-				      		$xml = "<?xml version=\"1.0\" encoding=\"". PMXI_Plugin::$session->data['pmxi_import']['encoding'] ."\"?>" . "\n" . $xml;		
-				      		PMXI_Import_Record::preprocessXml($xml);	      						      							      					      		
+				      		PMXI_Import_Record::preprocessXml($xml);
+				      		$xml = "<?xml version=\"1.0\" encoding=\"". PMXI_Plugin::$session->data['pmxi_import']['encoding'] ."\"?>" . "\n" . $xml;						      			      						      							      					      		
 					      					      		
 					      	$dom = new DOMDocument('1.0', PMXI_Plugin::$session->data['pmxi_import']['encoding']);
 							$old = libxml_use_internal_errors(true);
-							$dom->loadXML(preg_replace('%xmlns.*=\s*([\'"]).*\1%sU', '', $xml));				
+							$dom->loadXML($xml);				
 							libxml_use_internal_errors($old);
 							$xpath = new DOMXPath($dom);
 							if (($elements = @$xpath->query(PMXI_Plugin::$session->data['pmxi_import']['xpath'])) and $elements->length){ 														
@@ -1245,11 +1254,12 @@ class PMXI_Admin_Import extends PMXI_Controller_Admin {
 		    while ($xml = $file->read()) {					      						    					    					    			    	
 		    	if (!empty($xml))
 		      	{			
-		      		$xml = "<?xml version=\"1.0\" encoding=\"". $post['import_encoding'] ."\"?>" . "\n" . $xml;			
 		      		PMXI_Import_Record::preprocessXml($xml);	      						      							      					      						      	
+		      		$xml = "<?xml version=\"1.0\" encoding=\"". $post['import_encoding'] ."\"?>" . "\n" . $xml;			
+		      		
 			      	$dom = new DOMDocument('1.0', $post['import_encoding']);															
 					$old = libxml_use_internal_errors(true);
-					$dom->loadXML(preg_replace('%xmlns.*=\s*([\'"]).*\1%sU', '', $xml)); // FIX: libxml xpath doesn't handle default namespace properly, so remove it upon XML load							
+					$dom->loadXML($xml); // FIX: libxml xpath doesn't handle default namespace properly, so remove it upon XML load							
 					libxml_use_internal_errors($old);
 					$xpath = new DOMXPath($dom);						
 					if (($this->data['elements'] = $elements = @$xpath->query(PMXI_Plugin::$session->data['pmxi_import']['xpath'])) and $elements->length){ 						
@@ -1341,18 +1351,12 @@ class PMXI_Admin_Import extends PMXI_Controller_Admin {
 					}					
 				}
 			}
+			
+			$DefaultOptions = (isset(PMXI_Plugin::$session->data['pmxi_import']['options']) ? PMXI_Plugin::$session->data['pmxi_import']['options'] : array()) + $default;
+			foreach (PMXI_Admin_Addons::get_active_addons() as $class) 
+				$DefaultOptions += call_user_func(array($class, "get_default_import_options"));			
 
-			if ( class_exists('PMWI_Plugin') )
-				$post = $this->input->post(
-					(isset(PMXI_Plugin::$session->data['pmxi_import']['options']) ? PMXI_Plugin::$session->data['pmxi_import']['options'] : array())
-					+ $default
-					+ PMWI_Plugin::get_default_import_options()
-				);
-			else 
-				$post = $this->input->post(
-					(isset(PMXI_Plugin::$session->data['pmxi_import']['options']) ? PMXI_Plugin::$session->data['pmxi_import']['options'] : array())
-					+ $default
-				);
+			$post = $this->input->post( $DefaultOptions );						
 
 			$scheduled = $this->input->post(array(
 				'is_scheduled' => ! empty(PMXI_Plugin::$session->data['pmxi_import']['scheduled']),
@@ -1360,18 +1364,13 @@ class PMXI_Admin_Import extends PMXI_Controller_Admin {
 			));
 	
 		} else {
-			$this->data['source_type'] = $this->data['import']->type;			
-			if ( class_exists('PMWI_Plugin') )
-				$post = $this->input->post(
-					$this->data['import']->options
-					+ $default
-					+ PMWI_Plugin::get_default_import_options()
-				);
-			else
-				$post = $this->input->post(
-					$this->data['import']->options
-					+ $default
-				);
+			$this->data['source_type'] = $this->data['import']->type;	
+			$DefaultOptions = $this->data['import']->options + $default;
+			foreach (PMXI_Admin_Addons::get_active_addons() as $class) 
+				$DefaultOptions += call_user_func(array($class, "get_default_import_options"));			
+
+			$post = $this->input->post( $DefaultOptions );	
+
 			$scheduled = $this->input->post(array(
 				'is_scheduled' => ! empty($this->data['import']->scheduled),
 				'scheduled_period' => ! empty($this->data['import']->scheduled) ? $this->data['import']->scheduled : '0 0 * * *', // daily by default
@@ -1703,12 +1702,12 @@ class PMXI_Admin_Import extends PMXI_Controller_Admin {
 
 					    	if ( ! empty($xml) )
 					      	{
-					      		$chunk = "<?xml version=\"1.0\" encoding=\"". $import->options['encoding'] ."\"?>"  . "\n" . $xml;
-					      		PMXI_Import_Record::preprocessXml($chunk);
+					      		PMXI_Import_Record::preprocessXml($xml);
+					      		$chunk = "<?xml version=\"1.0\" encoding=\"". $import->options['encoding'] ."\"?>"  . "\n" . $xml;					      		
 						      					      		
 						      	$dom = new DOMDocument('1.0', $import->options['encoding']);
 								$old = libxml_use_internal_errors(true);
-								$dom->loadXML(preg_replace('%xmlns.*=\s*([\'"]).*\1%sU', '', $chunk)); // FIX: libxml xpath doesn't handle default namespace properly, so remove it upon XML load											
+								$dom->loadXML($chunk); // FIX: libxml xpath doesn't handle default namespace properly, so remove it upon XML load											
 								libxml_use_internal_errors($old);
 								$xpath = new DOMXPath($dom);								
 
@@ -1750,6 +1749,8 @@ class PMXI_Admin_Import extends PMXI_Controller_Admin {
 		$ajax_processing = ("ajax" == $import->options['import_processing']) ? true : false;
 
 		PMXI_Plugin::$session['pmxi_import']['start_time'] = (empty(PMXI_Plugin::$session->data['pmxi_import']['start_time'])) ? time() : PMXI_Plugin::$session->data['pmxi_import']['start_time'];								
+
+		wp_cache_flush();
 
 		if ( PMXI_Plugin::is_ajax() or ! $ajax_processing ) {
 
@@ -1801,12 +1802,12 @@ class PMXI_Admin_Import extends PMXI_Controller_Admin {
 
 				    	if ( ! empty($xml) )
 				      	{
-				      		$chunk = "<?xml version=\"1.0\" encoding=\"". $import->options['encoding'] ."\"?>"  . "\n" . $xml;
-				      		PMXI_Import_Record::preprocessXml($chunk);
+				      		PMXI_Import_Record::preprocessXml($xml);
+				      		$chunk = "<?xml version=\"1.0\" encoding=\"". $import->options['encoding'] ."\"?>"  . "\n" . $xml;				      		
 					      					      		
 					      	$dom = new DOMDocument('1.0', $import->options['encoding']);
 							$old = libxml_use_internal_errors(true);							
-							$dom->loadXML(preg_replace('%xmlns.*=\s*([\'"]).*\1%sU', '', $chunk)); // FIX: libxml xpath doesn't handle default namespace properly, so remove it upon XML load	
+							$dom->loadXML($chunk); // FIX: libxml xpath doesn't handle default namespace properly, so remove it upon XML load	
 							libxml_use_internal_errors($old);
 							$xpath = new DOMXPath($dom);
 
@@ -2191,29 +2192,31 @@ COMPLETE;
 					$file = new PMXI_Chunk($path, array('element' => $root_element, 'encoding' => PMXI_Plugin::$session->data['pmxi_import']['encoding']));															
 
 				    while ($xml = $file->read()) {					      						    					    					    					    					    					    				    					    	
+
 				    	if (!empty($xml))
 				      	{								      		
-				      		$xml = "<?xml version=\"1.0\" encoding=\"". PMXI_Plugin::$session->data['pmxi_import']['encoding'] ."\"?>" . "\n" . $xml;				      		
-				      		PMXI_Import_Record::preprocessXml($xml);				      		
-				      		
+				      		PMXI_Import_Record::preprocessXml($xml);
+				      		$xml = "<?xml version=\"1.0\" encoding=\"". PMXI_Plugin::$session->data['pmxi_import']['encoding'] ."\"?>" . "\n" . $xml;				      						      						      		
+				    					    	
 					      	if ( '' != $customXpath){
 						      	$dom = new DOMDocument('1.0', PMXI_Plugin::$session->data['pmxi_import']['encoding']);
 								$old = libxml_use_internal_errors(true);
-								$dom->loadXML(preg_replace('%xmlns.*=\s*([\'"]).*\1%sU', '', $xml));
+								$dom->loadXML($xml);
 								libxml_use_internal_errors($old);
-								$xpath = new DOMXPath($dom);								
-								if (($elements = @$xpath->query($customXpath)) and $elements->length){
+								$xpath = new DOMXPath($dom);									
+								if (($elements = $xpath->query($customXpath)) and $elements->length){
 									$this->data['dom'] = $dom;
 									$loop++;
 									if ( ! $tagno or $loop == $tagno ) break;
-								}		
+								}										
 							}
 							else break;
 					    }
 					}
-					unset($file);					
+					unset($file);		
+
 				}
-			}
+			}			
 		}			
 		return $xml;
 	}

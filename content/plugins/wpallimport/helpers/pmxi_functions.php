@@ -202,6 +202,17 @@
 		}
 	}
 
+	if ( ! function_exists('getExtensionFromStr')){
+		function pmxi_getExtensionFromStr($str) 
+	    {
+	        $i = strrpos($str,".");
+	        if (!$i) return "";
+	        $l = strlen($str) - $i;
+	        $ext = substr($str,$i+1,$l);
+	        return (preg_match('%\W(jpg|jpeg|gif|png)$%i', basename($ext)) and strlen($ext) <= 4) ? $ext : "";
+		}
+	}
+
 	/**
 	 * Reading large files from remote server
 	 * @ $filePath - file URL
@@ -376,7 +387,7 @@
 
 			$change_array = explode(',', $change);
 
-			if ( empty($change_array) or count($orig_array) != count($change_array)) return "";
+			if ( empty($change_array) or count($orig_array) != count($change_array)) return "";					
 
 			return str_replace(array_map('trim', $orig_array), array_map('trim', $change_array), $value); 
 			
@@ -388,23 +399,42 @@
 		function pmxi_convert_encoding ( $source, $target_encoding = 'ASCII' )
 		{		   
 
-		    // detect the character encoding of the incoming file
-		    $encoding = mb_detect_encoding( $source, "auto" );
-		      
-		    // escape all of the question marks so we can remove artifacts from
-		    // the unicode conversion process
-		    $target = str_replace( "?", "[question_mark]", $source );
-		    
-		    // convert the string to the target encoding
-		    $target = mb_convert_encoding( $target, $target_encoding, $encoding);
-		      
-		    // remove any question marks that have been introduced because of illegal characters
-		    $target = str_replace( "?", "", $target );
-		      
-		    // replace the token string "[question_mark]" with the symbol "?"
-		    $target = str_replace( "[question_mark]", "?", $target );
-		  	
-		    return html_entity_decode($target, ENT_COMPAT, 'UTF-8');
+			if ( function_exists('mb_detect_encoding') ){
+			    
+			    // detect the character encoding of the incoming file
+			    $encoding = mb_detect_encoding( $source, "auto" );
+			      
+			    // escape all of the question marks so we can remove artifacts from
+			    // the unicode conversion process
+			    $target = str_replace( "?", "[question_mark]", $source );
+			    
+			    // convert the string to the target encoding
+			    $target = mb_convert_encoding( $target, $target_encoding, $encoding);
+			      
+			    // remove any question marks that have been introduced because of illegal characters
+			    $target = str_replace( "?", "", $target );
+			      
+			    // replace the token string "[question_mark]" with the symbol "?"
+			    $target = str_replace( "[question_mark]", "?", $target );
+			  	
+			    return html_entity_decode($target, ENT_COMPAT, 'UTF-8');
+
+			}
+
+			return $source;
+		}
+	}
+
+	if ( ! function_exists('pmxi_imageurlencode')){
+
+		function pmxi_imageurlencode($url){
+
+		    $urlArray = parse_url($url);
+
+		    $url = ($urlArray['scheme'].'://'.$urlArray['host'].str_replace('%2F', '/', urlencode($urlArray['path'])));
+		    $url .= isset($urlArray['query']) ? '?'.$urlArray['query'] : '';
+
+		    return $url;
 		}
 	}
 

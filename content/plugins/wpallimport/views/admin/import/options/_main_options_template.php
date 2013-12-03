@@ -1,8 +1,8 @@
 <tr>
 	<td style="border-bottom:1px solid #ccc;" colspan="3">
 		
-		<input type="hidden" name="encoding" value="<?php echo ($this->isWizard) ? PMXI_Plugin::$session->data['pmxi_import']['encoding'] : $post['encoding']; ?>"/>
-		<input type="hidden" name="delimiter" value="<?php echo ($this->isWizard) ? PMXI_Plugin::$session->data['pmxi_import']['is_csv'] : $post['delimiter']; ?>"/>
+		<input type="hidden" name="encoding" value="<?php echo ($isWizard) ? PMXI_Plugin::$session->data['pmxi_import']['encoding'] : $post['encoding']; ?>"/>
+		<input type="hidden" name="delimiter" value="<?php echo ($isWizard) ? PMXI_Plugin::$session->data['pmxi_import']['is_csv'] : $post['delimiter']; ?>"/>
 
 		<?php $is_support_post_format = ( current_theme_supports( 'post-formats' ) && post_type_supports( $post_type, 'post-formats' ) ) ? true : false; ?>
 

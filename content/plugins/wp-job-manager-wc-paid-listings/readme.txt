@@ -2,7 +2,7 @@
 Contributors: mikejolley
 Requires at least: 3.5
 Tested up to: 3.5
-Stable tag: 1.0.3
+Stable tag: 1.0.5
 License: GNU General Public License v3.0
 
 Add paid listing functionality via WooCommerce. Create 'job packages' as products with their own price, listing duration, listing limit, and job featured status and either sell them via your store or during the job submission process.
@@ -29,6 +29,12 @@ If you need help with customisation you will need to find and hire a developer c
 To install this plugin, please refer to the guide here: [http://codex.wordpress.org/Managing_Plugins#Manual_Plugin_Installation](http://codex.wordpress.org/Managing_Plugins#Manual_Plugin_Installation)
 
 == Changelog ==
+
+= 1.0.5 = 
+* Make first user package selected
+
+= 1.0.4 = 
+* Moved user packages above product packages
 
 = 1.0.3 = 
 * Fixed job_packages_processed meta check

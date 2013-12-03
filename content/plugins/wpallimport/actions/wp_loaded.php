@@ -35,7 +35,7 @@ function pmxi_wp_loaded() {
 
 					break;
 				case 'processing':
-					if ( $import->processing == 1 and time() - strtotime($import->registered_on) > 300){ // it means processor crashed, so it will reset processing to false, and terminate. Then next run it will work normally.
+					if ( $import->processing == 1 and time() - strtotime($import->registered_on) > 120){ // it means processor crashed, so it will reset processing to false, and terminate. Then next run it will work normally.
 						$import->set(array(
 							'processing' => 0
 						))->update();
@@ -43,8 +43,7 @@ function pmxi_wp_loaded() {
 					
 					// start execution imports that is in the cron process					
 					if ( (int) $import->triggered and ! (int) $import->processing ){
-						$import->execute(); // repull record from database since list didn't contain all the fileds for performance optimization purposes
-						exit('Import complete'); die;
+						$import->execute(); // repull record from database since list didn't contain all the fileds for performance optimization purposes						
 					}
 					else {
 						exit('Import already processing. Request skipped.'); die;

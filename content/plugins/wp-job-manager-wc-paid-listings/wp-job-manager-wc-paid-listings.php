@@ -3,7 +3,7 @@
 Plugin Name: WP Job Manager - WooCommerce Paid Listings
 Plugin URI: http://mikejolley.com
 Description: Add paid listing functionality via WooCommerce. Create 'job packages' as products with their own price, listing duration, listing limit, and job featured status and either sell them via your store or during the job submission process. A user's packages are shown on their account page and can be used to post future jobs if they allow more than 1 job listing. Requires Job Manager 1.2+
-Version: 1.0.3
+Version: 1.0.5
 Author: Mike Jolley
 Author URI: http://mikejolley.com
 Requires at least: 3.5
@@ -38,7 +38,7 @@ function wp_job_manager_wcpl_init() {
 		 */
 		public function __construct() {
 			// Define constants
-			define( 'JOB_MANAGER_WCPL_VERSION', '1.0.3' );
+			define( 'JOB_MANAGER_WCPL_VERSION', '1.0.5' );
 			define( 'JOB_MANAGER_WCPL_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 			define( 'JOB_MANAGER_WCPL_PLUGIN_URL', untrailingslashit( plugins_url( basename( plugin_dir_path( __FILE__ ) ), basename( __FILE__ ) ) ) );
 			define( 'JOB_MANAGER_WCPL_TEMPLATE_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) . '/templates/' );

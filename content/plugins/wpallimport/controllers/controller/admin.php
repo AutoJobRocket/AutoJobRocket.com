@@ -43,8 +43,7 @@ abstract class PMXI_Controller_Admin extends PMXI_Controller {
 		wp_enqueue_style('jquery-ui', PMXI_ROOT_URL . '/static/js/jquery/css/redmond/jquery-ui.css');
 		wp_enqueue_style('jquery-tipsy', PMXI_ROOT_URL . '/static/js/jquery/css/smoothness/jquery.tipsy.css');
 		wp_enqueue_style('pmxi-admin-style', PMXI_ROOT_URL . '/static/css/admin.css');
-		wp_enqueue_style('pmxi-admin-style-ie', PMXI_ROOT_URL . '/static/css/admin-ie.css');
-		//wp_enqueue_style('jquery-chosen', PMXI_ROOT_URL . '/static/js/jquery/css/chosen/chosen.min.css');
+		wp_enqueue_style('pmxi-admin-style-ie', PMXI_ROOT_URL . '/static/css/admin-ie.css');		
 		wp_enqueue_style('jquery-select2', PMXI_ROOT_URL . '/static/js/jquery/css/select2/select2.css');
 		wp_enqueue_style('jquery-select2', PMXI_ROOT_URL . '/static/js/jquery/css/select2/select2-bootstrap.css');
 		$wp_styles->add_data('pmxi-admin-style-ie', 'conditional', 'lte IE 7');
@@ -59,8 +58,7 @@ abstract class PMXI_Controller_Admin extends PMXI_Controller {
 		wp_enqueue_script('jquery-ui-autocomplete', PMXI_ROOT_URL . '/static/js/jquery/ui.autocomplete.js', array('jquery-ui-core', 'jquery-ui-widget', 'jquery-ui-position'));
 		wp_enqueue_script('jquery-tipsy', PMXI_ROOT_URL . '/static/js/jquery/jquery.tipsy.js', 'jquery');
 		wp_enqueue_script('jquery-nestable', PMXI_ROOT_URL . '/static/js/jquery/jquery.mjs.nestedSortable.js', array('jquery', 'jquery-ui-dialog', 'jquery-ui-sortable', 'jquery-ui-draggable', 'jquery-ui-droppable', 'jquery-ui-tabs', 'jquery-ui-progressbar'));
-		wp_enqueue_script('jquery-moment', PMXI_ROOT_URL . '/static/js/jquery/moment.js', 'jquery');
-		//wp_enqueue_script('jquery-chosen', PMXI_ROOT_URL . '/static/js/jquery/chosen.jquery.min.js', 'jquery');
+		wp_enqueue_script('jquery-moment', PMXI_ROOT_URL . '/static/js/jquery/moment.js', 'jquery');		
 		wp_enqueue_script('jquery-select2', PMXI_ROOT_URL . '/static/js/jquery/select2.min.js', 'jquery');
 		wp_enqueue_script('wp-pointer');
 

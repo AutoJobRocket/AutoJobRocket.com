@@ -187,7 +187,7 @@ $columns = array(
 										<span class="update"><a class="update" href="<?php echo esc_url(add_query_arg(array('page' => 'pmxi-admin-import', 'id' => $item['id']), admin_url('admin.php'))) ?>"><?php _e('Re-Run With New File', 'pmxi_plugin') ?></a></span> |
 										<span class="update"><a class="update" href="<?php echo esc_url(add_query_arg(array('id' => $item['id'], 'action' => 'log'), $this->baseUrl)) ?>"><?php _e('Download Log', 'pmxi_plugin') ?></a></span> |
 										<span class="delete"><a class="delete" href="<?php echo esc_url(add_query_arg(array('id' => $item['id'], 'action' => 'delete'), $this->baseUrl)) ?>"><?php _e('Delete', 'pmxi_plugin') ?></a></span>
-										<?php if ( ($item['imported'] + $item['skipped']) != $item['count'] and ! $item['options']['is_import_specified'] and ! (int) $item['triggered'] ):?>
+										<?php if ( ($item['imported'] + $item['skipped']) < $item['count'] and ! $item['options']['is_import_specified'] and ! (int) $item['triggered'] ):?>
 										| <span class="update"><a class="update" href="<?php echo esc_url(add_query_arg(array('id' => $item['id'], 'action' => 'update', 'type' => 'continue'), $this->baseUrl)) ?>"><?php _e('Continue import', 'pmxi_plugin') ?></a></span>
 										<?php endif; ?>
 									</div>

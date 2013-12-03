@@ -27,6 +27,20 @@ function pmxi_admin_notices() {
 		<?php
 	}
 
+	if ( class_exists( 'PMWI_Plugin' ) and version_compare(PMWI_VERSION, '1.2.0') <= 0) {
+		?>
+		<div class="error"><p>
+			<?php printf(
+					__('<b>%s Plugin</b>: WP All Import WooCommerce addon must be higher than 1.2 </a>', 'pmwi_plugin'),
+					PMWI_Plugin::getInstance()->getName()
+			) ?>
+		</p></div>
+		<?php
+		
+		deactivate_plugins( PMWI_ROOT_DIR . '/plugin.php');
+		
+	}
+
 	$input = new PMXI_Input();
 	$messages = $input->get('pmxi_nt', array());
 	if ($messages) {

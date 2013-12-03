@@ -206,7 +206,8 @@ class PMXI_Chunk {
                     continue;
                   }                
                   
-                  $xml = $this->reader->readOuterXML();
+                  $xml = @$this->reader->readOuterXML();                  
+
                   break(2);                                
               }            
               break;
@@ -219,7 +220,7 @@ class PMXI_Chunk {
       $xml = false;
     }    
     
-    return ( ! empty($xml) ) ? $this->removeColonsFromRSS($xml) : false;
+    return ( ! empty($xml) ) ? $this->removeColonsFromRSS(preg_replace('%xmlns.*=\s*([\'"]).*\1%sU', '', $xml)) : false;
 
   }  
 
@@ -228,12 +229,12 @@ class PMXI_Chunk {
         // pull out colons from start tags
         // (<\w+):(\w+>)
         $pattern = '/(<\w+):(\w+[ |>]{1})/i';
-        $replacement = '$1_$2';
+        $replacement = '<$2';
         $feed = preg_replace($pattern, $replacement, $feed);
         // pull out colons from end tags
         // (<\/\w+):(\w+>)
         $pattern = '/(<\/\w+):(\w+>)/i';
-        $replacement = '$1_$2';
+        $replacement = '</$2';
         $feed = preg_replace($pattern, $replacement, $feed);
         // pull out colons from attributes
         $pattern = '/(\s+\w+):(\w+[=]{1})/i';
@@ -251,7 +252,7 @@ class removecolons_filter extends php_user_filter {
     function filter($in, $out, &$consumed, $closing)
     {
       while ($bucket = stream_bucket_make_writeable($in)) {
-        $bucket->data = $this->removeColonsFromRSS(preg_replace('%xmlns.*=\s*([\'"]).*\1%sU', '', $bucket->data));              
+        $bucket->data = $this->removeColonsFromRSS(preg_replace('%xmlns.*=\s*([\'"]).*\1%sU', '', $bucket->data));              //preg_replace ('/[^\x{0009}\x{000a}\x{000d}\x{0020}-\x{D7FF}\x{E000}-\x{FFFD}]+/u', ' ', $bucket->data);
         $consumed += $bucket->datalen;        
         stream_bucket_append($out, $bucket);
       }      

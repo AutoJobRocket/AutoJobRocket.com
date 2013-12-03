@@ -54,13 +54,7 @@ class PMXI_Admin_Manage extends PMXI_Controller_Admin {
 			'current' => $pagenum,
 		));
 		
-		pmxi_session_unset();
-
-		$uploads = wp_upload_dir();
-
-		foreach (PMXI_Helper::safe_glob($uploads['path'] . '/pmxi_chunk_*', PMXI_Helper::GLOB_RECURSE | PMXI_Helper::GLOB_PATH) as $filePath) {
-			@file_exists($filePath) and @unlink($filePath);		
-		}
+		pmxi_session_unset();		
 
 		$this->render();
 	}
@@ -157,7 +151,7 @@ class PMXI_Admin_Manage extends PMXI_Controller_Admin {
 					if ($files) {
 						foreach ($files as $singlePath) {
 
-							if (preg_match('%\W(xml|csv|txt|dat|psv)$%i', trim($singlePath)) and @is_file($singlePath)){
+							if (preg_match('%\W(xml|csv|txt|dat|psv|gz|zip)$%i', trim($singlePath))){
 
 								$parsed_url = parse_url($singlePath);						
 
@@ -434,12 +428,12 @@ class PMXI_Admin_Manage extends PMXI_Controller_Admin {
 					    	
 					    	if (!empty($xml))
 					      	{												      		
-					      		$xml = "<?xml version=\"1.0\" encoding=\"". $item->options['encoding'] ."\"?>" . "\n" . $xml;
-					      		PMXI_Import_Record::preprocessXml($xml);	      						      							      					      		
+					      		PMXI_Import_Record::preprocessXml($xml);	
+					      		$xml = "<?xml version=\"1.0\" encoding=\"". $item->options['encoding'] ."\"?>" . "\n" . $xml;					      		      						      							      					      	
 						      					      		
 						      	$dom = new DOMDocument('1.0', ( ! empty($item->options['encoding']) ) ? $item->options['encoding'] : 'UTF-8');															
 								$old = libxml_use_internal_errors(true);
-								$dom->loadXML(preg_replace('%xmlns.*=\s*([\'"]).*\1%sU', '', $xml)); // FIX: libxml xpath doesn't handle default namespace properly, so remove it upon XML load							
+								$dom->loadXML($xml); // FIX: libxml xpath doesn't handle default namespace properly, so remove it upon XML load							
 								libxml_use_internal_errors($old);
 								$xpath = new DOMXPath($dom);
 								if (($elements = @$xpath->query($item->xpath)) and !empty($elements) and !empty($elements->length)) $chunks += $elements->length;

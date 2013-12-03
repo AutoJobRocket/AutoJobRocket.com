@@ -82,11 +82,13 @@
 	});	
 	
 	// swither show/hide logic
-	$('input.switcher').change(function (e) {		
+	$('input.switcher').live('change', function (e) {	
+
 		if ($(this).is(':radio:checked')) {
 			$(this).parents('form').find('input.switcher:radio[name="' + $(this).attr('name') + '"]').not(this).change();
 		}
 		var $targets = $('.switcher-target-' + $(this).attr('id'));
+
 		var is_show = $(this).is(':checked'); if ($(this).is('.switcher-reversed')) is_show = ! is_show;
 		if (is_show) {
 			$targets.fadeIn();

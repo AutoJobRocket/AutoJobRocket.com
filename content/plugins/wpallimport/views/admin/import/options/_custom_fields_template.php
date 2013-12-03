@@ -1,7 +1,7 @@
 <tr>
 	<td colspan="3" style="padding-top:20px;">
 		<fieldset class="optionsset" style="text-align:center;">
-			<legend>Custom Fields</legend>													
+			<legend><?php _e('Custom Fields','pmxi_plugin');?></legend>
 			<table class="form-table custom-params" style="max-width:none; border:none;">
 			<thead>
 				<tr>

@@ -9,7 +9,8 @@
 				<div class="switcher-target-auto_matching_<?php echo $entry; ?>"  style="padding-left:17px;">
 					<div class="input">
 						<label><?php _e("Unique key"); ?></label>
-						<input type="text" class="smaller-text" name="unique_key" style="width:300px;" value="<?php echo esc_attr($post['unique_key']) ?>" <?php echo  ! ($this->isWizard && $update_previous->isEmpty()) ? 'disabled="disabled"' : '' ?>/>
+						
+						<input type="text" class="smaller-text" name="unique_key" style="width:300px;" value="<?php echo esc_attr($post['unique_key']) ?>" <?php echo  ( ! $isWizard ) ? 'disabled="disabled"' : '' ?>/>
 						<a href="#help" class="help" title="<?php _e('If posts are being updated and not just created during a brand new import, the problem is that the value of the unique key is not unique for each record.', 'pmxi_plugin') ?>">?</a>
 					</div>
 				</div>
@@ -99,6 +100,11 @@
 							<input type="hidden" name="is_update_title" value="0" />
 							<input type="checkbox" id="is_update_title_<?php echo $entry; ?>" name="is_update_title" value="1" <?php echo $post['is_update_title'] ? 'checked="checked"': '' ?> />
 							<label for="is_update_title_<?php echo $entry; ?>"><?php _e('Title', 'pmxi_plugin') ?></label>
+						</div>
+						<div class="input">
+							<input type="hidden" name="is_update_slug" value="0" />
+							<input type="checkbox" id="is_update_slug_<?php echo $entry; ?>" name="is_update_slug" value="1" <?php echo $post['is_update_slug'] ? 'checked="checked"': '' ?> />
+							<label for="is_update_slug_<?php echo $entry; ?>"><?php _e('Slug', 'pmxi_plugin') ?></label>
 						</div>
 						<div class="input">
 							<input type="hidden" name="is_update_content" value="0" />
